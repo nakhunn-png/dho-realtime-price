@@ -1,0 +1,13 @@
+[package]
+name = "recog"
+version = "0.1.0"
+edition = "2024"
+description = "게임 화면에서 교역 창·품목·숫자·도시 이름을 읽는다 (collector/recog.py 이식)"
+
+[dependencies]
+png = "=0.18.1"
+windows = { version = "=0.58.0", features = ["Win32_Graphics_Gdi", "Win32_Foundation", "Media_Ocr", "Graphics_Imaging", "Storage_Streams", "Foundation", "Foundation_Collections", "Globalization", "Win32_System_WinRT"] }
+
+[dev-dependencies]
+image = { version = "=0.25.10", default-features = false, features = ["png", "webp"] }
+serde_json = "=1.0.154"

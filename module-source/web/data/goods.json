@@ -1,0 +1,5302 @@
+{
+ "_note": "출처: 대항온인포(dhoinfo.com) 교역품 위키. tools/fetch_dhoinfo.py 로 생성.",
+ "updated": "2026-11-07",
+ "goods": [
+  {
+   "name": "가넷트 원석",
+   "number": "1521354",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521354.png"
+  },
+  {
+   "name": "가는 끈",
+   "number": "3059",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3059.png"
+  },
+  {
+   "name": "가다랑어",
+   "number": "2794",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2794.png"
+  },
+  {
+   "name": "가람 마사라",
+   "number": "2655",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2655.png"
+  },
+  {
+   "name": "가르다몬",
+   "number": "2656",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2656.png"
+  },
+  {
+   "name": "가오리",
+   "number": "2947",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2947.png"
+  },
+  {
+   "name": "가자미",
+   "number": "2795",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2795.png"
+  },
+  {
+   "name": "가죽끈",
+   "number": "2878",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2878.png"
+  },
+  {
+   "name": "가지",
+   "number": "3042",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3042.png"
+  },
+  {
+   "name": "각 세공",
+   "number": "3085",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3085.png"
+  },
+  {
+   "name": "간장",
+   "number": "3025",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3025.png"
+  },
+  {
+   "name": "갈돔",
+   "number": "2948",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2948.png"
+  },
+  {
+   "name": "갈치",
+   "number": "242006",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/242006.png"
+  },
+  {
+   "name": "감람석",
+   "number": "2594",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2594.png"
+  },
+  {
+   "name": "감성돔",
+   "number": "2796",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2796.png"
+  },
+  {
+   "name": "감자",
+   "number": "2797",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2797.png"
+  },
+  {
+   "name": "갑오징어",
+   "number": "2923",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2923.png"
+  },
+  {
+   "name": "갑옷메기",
+   "number": "2884",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2884.png"
+  },
+  {
+   "name": "갑향",
+   "number": "2707",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "동아프리카",
+   "icon": "data/icons/2707.png"
+  },
+  {
+   "name": "강달소라",
+   "number": "2583",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2583.png"
+  },
+  {
+   "name": "강철",
+   "number": "2756",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2756.png"
+  },
+  {
+   "name": "개미",
+   "number": "2974",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2974.png"
+  },
+  {
+   "name": "개복치",
+   "number": "2798",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2798.png"
+  },
+  {
+   "name": "갯장어",
+   "number": "3065",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3065.png"
+  },
+  {
+   "name": "거대한 바위",
+   "number": "2901",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2901.png"
+  },
+  {
+   "name": "거대한 잎",
+   "number": "2888",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2888.png"
+  },
+  {
+   "name": "건포도",
+   "number": "2620",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2620.png"
+  },
+  {
+   "name": "걸작 송백자",
+   "number": "3983426",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3983426.png"
+  },
+  {
+   "name": "걸작 중국 서화",
+   "number": "3983428",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3983428.png"
+  },
+  {
+   "name": "검은색 광석",
+   "number": "2742",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2742.png"
+  },
+  {
+   "name": "검은색 진흙",
+   "number": "2743",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2743.png"
+  },
+  {
+   "name": "게",
+   "number": "2799",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2799.png"
+  },
+  {
+   "name": "계피",
+   "number": "2657",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2657.png"
+  },
+  {
+   "name": "고구마",
+   "number": "2898",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2898.png"
+  },
+  {
+   "name": "고급가구",
+   "number": "2690",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2690.png"
+  },
+  {
+   "name": "고급의류",
+   "number": "2546",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2546.png"
+  },
+  {
+   "name": "고대 미술품",
+   "number": "2540",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2540.png"
+  },
+  {
+   "name": "고등어",
+   "number": "2800",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2800.png"
+  },
+  {
+   "name": "고려청자",
+   "number": "3007",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3007.png"
+  },
+  {
+   "name": "고무",
+   "number": "2912",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2912.png"
+  },
+  {
+   "name": "고묵",
+   "number": "3113",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3113.png"
+  },
+  {
+   "name": "고블랭 직물",
+   "number": "2564",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2564.png"
+  },
+  {
+   "name": "고추",
+   "number": "2911",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2911.png"
+  },
+  {
+   "name": "고추장",
+   "number": "3023",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3023.png"
+  },
+  {
+   "name": "곡도",
+   "number": "2542",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2542.png"
+  },
+  {
+   "name": "공단",
+   "number": "2565",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2565.png"
+  },
+  {
+   "name": "공작",
+   "number": "2973",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2973.png"
+  },
+  {
+   "name": "공작석",
+   "number": "2595",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2595.png"
+  },
+  {
+   "name": "공작의 깃털",
+   "number": "2549",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2549.png"
+  },
+  {
+   "name": "과일 소스",
+   "number": "37232",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/37232.png"
+  },
+  {
+   "name": "광어",
+   "number": "2896",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2896.png"
+  },
+  {
+   "name": "굴",
+   "number": "2801",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2801.png"
+  },
+  {
+   "name": "굴 소스",
+   "number": "3021",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3021.png"
+  },
+  {
+   "name": "굴조개",
+   "number": "3077",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3077.png"
+  },
+  {
+   "name": "귀뚜라미",
+   "number": "2976",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2976.png"
+  },
+  {
+   "name": "귀중서",
+   "number": "2914",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2914.png"
+  },
+  {
+   "name": "그루쿠마",
+   "number": "2802",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2802.png"
+  },
+  {
+   "name": "극상 고묵",
+   "number": "3983430",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3983430.png"
+  },
+  {
+   "name": "극상 중국비단",
+   "number": "3983414",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3983414.png"
+  },
+  {
+   "name": "극상 화지",
+   "number": "3983436",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3983436.png"
+  },
+  {
+   "name": "금",
+   "number": "2591",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2591.png"
+  },
+  {
+   "name": "금괴",
+   "number": "241271",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/241271.png"
+  },
+  {
+   "name": "금눈돔",
+   "number": "2803",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2803.png"
+  },
+  {
+   "name": "금목서",
+   "number": "3101",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "화남",
+   "icon": "data/icons/3101.png"
+  },
+  {
+   "name": "금세공",
+   "number": "2691",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2691.png"
+  },
+  {
+   "name": "금실",
+   "number": "2692",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2692.png"
+  },
+  {
+   "name": "금침화",
+   "number": "3075",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3075.png"
+  },
+  {
+   "name": "기나피",
+   "number": "2915",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2915.png"
+  },
+  {
+   "name": "기묘한 열매",
+   "number": "2899",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2899.png"
+  },
+  {
+   "name": "깃털",
+   "number": "2550",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "북유럽",
+   "icon": "data/icons/2550.png"
+  },
+  {
+   "name": "깨",
+   "number": "2658",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2658.png"
+  },
+  {
+   "name": "꼬치고기",
+   "number": "244116",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/244116.png"
+  },
+  {
+   "name": "꼬치삼치",
+   "number": "2804",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2804.png"
+  },
+  {
+   "name": "꽁치",
+   "number": "2805",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2805.png"
+  },
+  {
+   "name": "꿀",
+   "number": "2776",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2776.png"
+  },
+  {
+   "name": "꿀벌 집",
+   "number": "2806",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2806.png"
+  },
+  {
+   "name": "나무 열매",
+   "number": "2807",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2807.png"
+  },
+  {
+   "name": "나무껍질",
+   "number": "2900",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2900.png"
+  },
+  {
+   "name": "나일파치",
+   "number": "2808",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2808.png"
+  },
+  {
+   "name": "나전칠기",
+   "number": "3011",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3011.png"
+  },
+  {
+   "name": "나탈인디고",
+   "number": "3117",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "북미 동해안",
+   "icon": "data/icons/3117.png"
+  },
+  {
+   "name": "낙타모",
+   "number": "2551",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2551.png"
+  },
+  {
+   "name": "날개다랑어",
+   "number": "3122",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3122.png"
+  },
+  {
+   "name": "날새기",
+   "number": "2809",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2809.png"
+  },
+  {
+   "name": "납",
+   "number": "2757",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2757.png"
+  },
+  {
+   "name": "납광석",
+   "number": "2744",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2744.png"
+  },
+  {
+   "name": "넙치",
+   "number": "2810",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2810.png"
+  },
+  {
+   "name": "네덜란드 편사",
+   "number": "2566",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "네덜란드",
+   "icon": "data/icons/2566.png"
+  },
+  {
+   "name": "노니",
+   "number": "2958",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "동남아시아",
+   "icon": "data/icons/2958.png"
+  },
+  {
+   "name": "노란색 광석",
+   "number": "2745",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2745.png"
+  },
+  {
+   "name": "노랑촉수",
+   "number": "2811",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2811.png"
+  },
+  {
+   "name": "녹색 광석",
+   "number": "2746",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2746.png"
+  },
+  {
+   "name": "놀래기",
+   "number": "2812",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2812.png"
+  },
+  {
+   "name": "놋쇠",
+   "number": "2758",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2758.png"
+  },
+  {
+   "name": "농어",
+   "number": "2813",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2813.png"
+  },
+  {
+   "name": "누에콩",
+   "number": "2814",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2814.png"
+  },
+  {
+   "name": "누크맘",
+   "number": "2938",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "동남아시아",
+   "icon": "data/icons/2938.png"
+  },
+  {
+   "name": "니켈 광석",
+   "number": "1016996",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1016996.png"
+  },
+  {
+   "name": "니트",
+   "number": "2567",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2567.png"
+  },
+  {
+   "name": "다금바리",
+   "number": "2891",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2891.png"
+  },
+  {
+   "name": "다랑어",
+   "number": "2815",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2815.png"
+  },
+  {
+   "name": "다마스커스 소드",
+   "number": "2677",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "서아시아",
+   "icon": "data/icons/2677.png"
+  },
+  {
+   "name": "다마스크 직물",
+   "number": "2568",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "서아시아",
+   "icon": "data/icons/2568.png"
+  },
+  {
+   "name": "다이아몬드",
+   "number": "2596",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "서아프리카",
+   "icon": "data/icons/2596.png"
+  },
+  {
+   "name": "다이아몬드 원석",
+   "number": "1521370",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521370.png"
+  },
+  {
+   "name": "단검",
+   "number": "2678",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2678.png"
+  },
+  {
+   "name": "단궁",
+   "number": "3029",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3029.png"
+  },
+  {
+   "name": "단안총",
+   "number": "3110",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3110.png"
+  },
+  {
+   "name": "달걀",
+   "number": "2816",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2816.png"
+  },
+  {
+   "name": "달고기",
+   "number": "2880",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2880.png"
+  },
+  {
+   "name": "달라헤스트",
+   "number": "3558132",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "북유럽",
+   "icon": "data/icons/3558132.png"
+  },
+  {
+   "name": "닭",
+   "number": "2613",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2613.png"
+  },
+  {
+   "name": "닭고기",
+   "number": "2877",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2877.png"
+  },
+  {
+   "name": "담배",
+   "number": "2621",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/2621.png"
+  },
+  {
+   "name": "당 편사",
+   "number": "3068",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3068.png"
+  },
+  {
+   "name": "당근",
+   "number": "2971",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2971.png"
+  },
+  {
+   "name": "당나귀",
+   "number": "3093",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3093.png"
+  },
+  {
+   "name": "당목향",
+   "number": "2708",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "서아프리카",
+   "icon": "data/icons/2708.png"
+  },
+  {
+   "name": "대구",
+   "number": "2817",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2817.png"
+  },
+  {
+   "name": "대나무",
+   "number": "3111",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3111.png"
+  },
+  {
+   "name": "대도",
+   "number": "3017",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3017.png"
+  },
+  {
+   "name": "대리석",
+   "number": "2759",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "발칸",
+   "icon": "data/icons/2759.png"
+  },
+  {
+   "name": "대리석상",
+   "number": "2700",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2700.png"
+  },
+  {
+   "name": "대만 목각",
+   "number": "3086",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3086.png"
+  },
+  {
+   "name": "대만 미주",
+   "number": "3071",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3071.png"
+  },
+  {
+   "name": "대만 사파이어",
+   "number": "3084",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3084.png"
+  },
+  {
+   "name": "대포",
+   "number": "2684",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2684.png"
+  },
+  {
+   "name": "덩굴 갑옷",
+   "number": "3088",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3088.png"
+  },
+  {
+   "name": "데킬라",
+   "number": "2729",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/2729.png"
+  },
+  {
+   "name": "도라도",
+   "number": "875330",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/875330.png"
+  },
+  {
+   "name": "도루묵",
+   "number": "2818",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2818.png"
+  },
+  {
+   "name": "도미",
+   "number": "3120",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3120.png"
+  },
+  {
+   "name": "도자기",
+   "number": "2693",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2693.png"
+  },
+  {
+   "name": "돌",
+   "number": "2541",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2541.png"
+  },
+  {
+   "name": "돌돔",
+   "number": "3028",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3028.png"
+  },
+  {
+   "name": "동",
+   "number": "2760",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2760.png"
+  },
+  {
+   "name": "동광석",
+   "number": "2747",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2747.png"
+  },
+  {
+   "name": "동권총",
+   "number": "3089",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3089.png"
+  },
+  {
+   "name": "동충하초",
+   "number": "3098",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3098.png"
+  },
+  {
+   "name": "동판화",
+   "number": "2701",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2701.png"
+  },
+  {
+   "name": "돼지",
+   "number": "2614",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2614.png"
+  },
+  {
+   "name": "돼지고기",
+   "number": "2819",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2819.png"
+  },
+  {
+   "name": "된장",
+   "number": "3024",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3024.png"
+  },
+  {
+   "name": "두리안",
+   "number": "2933",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "동남아시아",
+   "icon": "data/icons/2933.png"
+  },
+  {
+   "name": "두반장",
+   "number": "3094",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3094.png"
+  },
+  {
+   "name": "등",
+   "number": "3090",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3090.png"
+  },
+  {
+   "name": "등 세공",
+   "number": "3087",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3087.png"
+  },
+  {
+   "name": "등가시치",
+   "number": "64207",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/64207.png"
+  },
+  {
+   "name": "등심초",
+   "number": "3058",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3058.png"
+  },
+  {
+   "name": "디기탈리스",
+   "number": "2929",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2929.png"
+  },
+  {
+   "name": "딜",
+   "number": "2659",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2659.png"
+  },
+  {
+   "name": "딱총나무",
+   "number": "2640",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2640.png"
+  },
+  {
+   "name": "땅콩",
+   "number": "2622",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/2622.png"
+  },
+  {
+   "name": "땅콩유",
+   "number": "2777",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2777.png"
+  },
+  {
+   "name": "라드",
+   "number": "2778",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2778.png"
+  },
+  {
+   "name": "라벤더",
+   "number": "2709",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2709.png"
+  },
+  {
+   "name": "라일락",
+   "number": "2710",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2710.png"
+  },
+  {
+   "name": "라즈베리",
+   "number": "243669",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "북미 서해안",
+   "icon": "data/icons/243669.png"
+  },
+  {
+   "name": "라한과",
+   "number": "3095",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3095.png"
+  },
+  {
+   "name": "럼주",
+   "number": "2730",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2730.png"
+  },
+  {
+   "name": "레몬글래스",
+   "number": "2953",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2953.png"
+  },
+  {
+   "name": "레몬머틀",
+   "number": "2979",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "오세아니아",
+   "icon": "data/icons/2979.png"
+  },
+  {
+   "name": "레몬밤",
+   "number": "2641",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2641.png"
+  },
+  {
+   "name": "레몬오일",
+   "number": "2711",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2711.png"
+  },
+  {
+   "name": "레이스",
+   "number": "2569",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2569.png"
+  },
+  {
+   "name": "로즈마리",
+   "number": "2660",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2660.png"
+  },
+  {
+   "name": "로즈힙",
+   "number": "2642",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2642.png"
+  },
+  {
+   "name": "로카오",
+   "number": "3100",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3100.png"
+  },
+  {
+   "name": "루비",
+   "number": "2597",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2597.png"
+  },
+  {
+   "name": "루이보스",
+   "number": "1909934",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "동아프리카",
+   "icon": "data/icons/1909934.png"
+  },
+  {
+   "name": "리큐르",
+   "number": "2731",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2731.png"
+  },
+  {
+   "name": "링쟈오",
+   "number": "3072",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3072.png"
+  },
+  {
+   "name": "마 원단",
+   "number": "2879",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2879.png"
+  },
+  {
+   "name": "마노",
+   "number": "2598",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2598.png"
+  },
+  {
+   "name": "마늘",
+   "number": "2661",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2661.png"
+  },
+  {
+   "name": "마닐라마",
+   "number": "2955",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2955.png"
+  },
+  {
+   "name": "마스타드",
+   "number": "2662",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2662.png"
+  },
+  {
+   "name": "마야블루",
+   "number": "2903",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2903.png"
+  },
+  {
+   "name": "마젤란 쥐노래미",
+   "number": "2922",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2922.png"
+  },
+  {
+   "name": "마직물",
+   "number": "3081",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3081.png"
+  },
+  {
+   "name": "마카",
+   "number": "2993",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2993.png"
+  },
+  {
+   "name": "마카다미아넛트",
+   "number": "2963",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "오세아니아",
+   "icon": "data/icons/2963.png"
+  },
+  {
+   "name": "마테차",
+   "number": "2905",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2905.png"
+  },
+  {
+   "name": "만드라고라",
+   "number": "2643",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2643.png"
+  },
+  {
+   "name": "만새기",
+   "number": "2820",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2820.png"
+  },
+  {
+   "name": "말",
+   "number": "2890",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2890.png"
+  },
+  {
+   "name": "말린 딸기",
+   "number": "2623",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2623.png"
+  },
+  {
+   "name": "말린 망고",
+   "number": "2624",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2624.png"
+  },
+  {
+   "name": "말린 무화과",
+   "number": "2625",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "서아시아",
+   "icon": "data/icons/2625.png"
+  },
+  {
+   "name": "말린 사과",
+   "number": "2626",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2626.png"
+  },
+  {
+   "name": "말린 살구",
+   "number": "2627",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2627.png"
+  },
+  {
+   "name": "말린 자두",
+   "number": "2628",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2628.png"
+  },
+  {
+   "name": "망고",
+   "number": "2952",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "인도차이나",
+   "icon": "data/icons/2952.png"
+  },
+  {
+   "name": "망고스틴",
+   "number": "2936",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "인도차이나",
+   "icon": "data/icons/2936.png"
+  },
+  {
+   "name": "맥반석",
+   "number": "3005",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3005.png"
+  },
+  {
+   "name": "맥주",
+   "number": "2732",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2732.png"
+  },
+  {
+   "name": "머스켓총",
+   "number": "2685",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "이베리아",
+   "icon": "data/icons/2685.png"
+  },
+  {
+   "name": "메귀리",
+   "number": "2821",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2821.png"
+  },
+  {
+   "name": "메를루자",
+   "number": "2904",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2904.png"
+  },
+  {
+   "name": "메이스",
+   "number": "2957",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "동남아시아",
+   "icon": "data/icons/2957.png"
+  },
+  {
+   "name": "메이플 시럽",
+   "number": "3123",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "북미 동해안",
+   "icon": "data/icons/3123.png"
+  },
+  {
+   "name": "멧돼지",
+   "number": "3041",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3041.png"
+  },
+  {
+   "name": "면 원단",
+   "number": "2570",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2570.png"
+  },
+  {
+   "name": "면죽연화",
+   "number": "3115",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3115.png"
+  },
+  {
+   "name": "면화",
+   "number": "2552",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2552.png"
+  },
+  {
+   "name": "멸치",
+   "number": "2982",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2982.png"
+  },
+  {
+   "name": "명주",
+   "number": "3010",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3010.png"
+  },
+  {
+   "name": "명태",
+   "number": "62633",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/62633.png"
+  },
+  {
+   "name": "명품 일본도",
+   "number": "3983432",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3983432.png"
+  },
+  {
+   "name": "명품 타네가시마 총",
+   "number": "3983434",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3983434.png"
+  },
+  {
+   "name": "모래",
+   "number": "2538",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2538.png"
+  },
+  {
+   "name": "모슬린",
+   "number": "2571",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2571.png"
+  },
+  {
+   "name": "모시",
+   "number": "3045",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3045.png"
+  },
+  {
+   "name": "모시풀",
+   "number": "2946",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2946.png"
+  },
+  {
+   "name": "모직 원단",
+   "number": "2572",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2572.png"
+  },
+  {
+   "name": "모피",
+   "number": "2553",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2553.png"
+  },
+  {
+   "name": "목상",
+   "number": "2702",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2702.png"
+  },
+  {
+   "name": "목재",
+   "number": "2534",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2534.png"
+  },
+  {
+   "name": "몰약",
+   "number": "2644",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "북아프리카",
+   "icon": "data/icons/2644.png"
+  },
+  {
+   "name": "무색 승화약",
+   "number": "2994",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2994.png"
+  },
+  {
+   "name": "문어",
+   "number": "2822",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2822.png"
+  },
+  {
+   "name": "문절망둑",
+   "number": "2959",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2959.png"
+  },
+  {
+   "name": "물소",
+   "number": "3070",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3070.png"
+  },
+  {
+   "name": "물치 다랑어",
+   "number": "2823",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2823.png"
+  },
+  {
+   "name": "미모사",
+   "number": "2960",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "오세아니아",
+   "icon": "data/icons/2960.png"
+  },
+  {
+   "name": "민들레",
+   "number": "2913",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2913.png"
+  },
+  {
+   "name": "민족의상",
+   "number": "3124",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "북미 동해안",
+   "icon": "data/icons/3124.png"
+  },
+  {
+   "name": "민트",
+   "number": "2663",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2663.png"
+  },
+  {
+   "name": "밀",
+   "number": "2824",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2824.png"
+  },
+  {
+   "name": "밀가루",
+   "number": "2545",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2545.png"
+  },
+  {
+   "name": "바나나",
+   "number": "2950",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "동남아시아",
+   "icon": "data/icons/2950.png"
+  },
+  {
+   "name": "바나나피쉬",
+   "number": "2825",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2825.png"
+  },
+  {
+   "name": "바닐라",
+   "number": "2902",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2902.png"
+  },
+  {
+   "name": "바다빙어",
+   "number": "62631",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/62631.png"
+  },
+  {
+   "name": "바질",
+   "number": "2664",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2664.png"
+  },
+  {
+   "name": "발효주",
+   "number": "2733",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2733.png"
+  },
+  {
+   "name": "방어",
+   "number": "3000",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3000.png"
+  },
+  {
+   "name": "밭벼",
+   "number": "2826",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2826.png"
+  },
+  {
+   "name": "백금",
+   "number": "2961",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "동아프리카",
+   "icon": "data/icons/2961.png"
+  },
+  {
+   "name": "백금 광석",
+   "number": "1521372",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521372.png"
+  },
+  {
+   "name": "백년초",
+   "number": "3038",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3038.png"
+  },
+  {
+   "name": "백단",
+   "number": "2712",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2712.png"
+  },
+  {
+   "name": "백랍",
+   "number": "241205",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "북미 서해안",
+   "icon": "data/icons/241205.png"
+  },
+  {
+   "name": "백미돔",
+   "number": "2827",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2827.png"
+  },
+  {
+   "name": "백상어",
+   "number": "2828",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2828.png"
+  },
+  {
+   "name": "백자광석",
+   "number": "3050",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3050.png"
+  },
+  {
+   "name": "뱀장어",
+   "number": "2889",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2889.png"
+  },
+  {
+   "name": "버섯",
+   "number": "2829",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2829.png"
+  },
+  {
+   "name": "버터",
+   "number": "2779",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2779.png"
+  },
+  {
+   "name": "베르가못",
+   "number": "2665",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2665.png"
+  },
+  {
+   "name": "베링 이리치",
+   "number": "3121",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3121.png"
+  },
+  {
+   "name": "베이컨",
+   "number": "2830",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2830.png"
+  },
+  {
+   "name": "벤자리",
+   "number": "2831",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2831.png"
+  },
+  {
+   "name": "벨라돈나",
+   "number": "2645",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2645.png"
+  },
+  {
+   "name": "벨벳",
+   "number": "2573",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2573.png"
+  },
+  {
+   "name": "벵에돔",
+   "number": "3064",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3064.png"
+  },
+  {
+   "name": "벼",
+   "number": "2832",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2832.png"
+  },
+  {
+   "name": "별갑",
+   "number": "2941",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2941.png"
+  },
+  {
+   "name": "보드카",
+   "number": "2548",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2548.png"
+  },
+  {
+   "name": "보리",
+   "number": "2535",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2535.png"
+  },
+  {
+   "name": "보리멸",
+   "number": "2934",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2934.png"
+  },
+  {
+   "name": "보석세공",
+   "number": "2694",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2694.png"
+  },
+  {
+   "name": "보크사이트",
+   "number": "1016988",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1016988.png"
+  },
+  {
+   "name": "복분자",
+   "number": "3037",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3037.png"
+  },
+  {
+   "name": "복어",
+   "number": "2833",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2833.png"
+  },
+  {
+   "name": "볼락",
+   "number": "3063",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3063.png"
+  },
+  {
+   "name": "부시리",
+   "number": "2983",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2983.png"
+  },
+  {
+   "name": "부케가르니",
+   "number": "2834",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2834.png"
+  },
+  {
+   "name": "북투석",
+   "number": "3083",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3083.png"
+  },
+  {
+   "name": "붉은 콩",
+   "number": "2868",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2868.png"
+  },
+  {
+   "name": "붉은개복치",
+   "number": "2969",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2969.png"
+  },
+  {
+   "name": "붉은색 광석",
+   "number": "2748",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2748.png"
+  },
+  {
+   "name": "붓꽃",
+   "number": "3044",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3044.png"
+  },
+  {
+   "name": "브랜디",
+   "number": "2734",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2734.png"
+  },
+  {
+   "name": "블랙 피쉬",
+   "number": "3118",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3118.png"
+  },
+  {
+   "name": "블루베리",
+   "number": "243116",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "북미 서해안",
+   "icon": "data/icons/243116.png"
+  },
+  {
+   "name": "블루피쉬",
+   "number": "3119",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3119.png"
+  },
+  {
+   "name": "비단 원단",
+   "number": "2574",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2574.png"
+  },
+  {
+   "name": "비취",
+   "number": "2599",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2599.png"
+  },
+  {
+   "name": "빈가타",
+   "number": "3030",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3030.png"
+  },
+  {
+   "name": "빨간 꽃",
+   "number": "2629",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2629.png"
+  },
+  {
+   "name": "사과식초",
+   "number": "2780",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2780.png"
+  },
+  {
+   "name": "사금",
+   "number": "2592",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2592.png"
+  },
+  {
+   "name": "사금석",
+   "number": "2600",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2600.png"
+  },
+  {
+   "name": "사다장",
+   "number": "3073",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3073.png"
+  },
+  {
+   "name": "사마 은",
+   "number": "3049",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "일본",
+   "icon": "data/icons/3049.png"
+  },
+  {
+   "name": "사슴",
+   "number": "2615",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2615.png"
+  },
+  {
+   "name": "사슴 가죽",
+   "number": "3078",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3078.png"
+  },
+  {
+   "name": "사이잘마",
+   "number": "2887",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2887.png"
+  },
+  {
+   "name": "사탕무",
+   "number": "2919",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2919.png"
+  },
+  {
+   "name": "사탕수수",
+   "number": "2835",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2835.png"
+  },
+  {
+   "name": "사파이어",
+   "number": "2601",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2601.png"
+  },
+  {
+   "name": "사파이어 원석",
+   "number": "1521352",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521352.png"
+  },
+  {
+   "name": "사프란",
+   "number": "2666",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "이베리아",
+   "icon": "data/icons/2666.png"
+  },
+  {
+   "name": "사향",
+   "number": "2713",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2713.png"
+  },
+  {
+   "name": "산양모",
+   "number": "2554",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2554.png"
+  },
+  {
+   "name": "산초",
+   "number": "3015",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "조선",
+   "icon": "data/icons/3015.png"
+  },
+  {
+   "name": "산초 된장",
+   "number": "3008",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3008.png"
+  },
+  {
+   "name": "산토끼",
+   "number": "2885",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2885.png"
+  },
+  {
+   "name": "산호",
+   "number": "2602",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2602.png"
+  },
+  {
+   "name": "산호세공",
+   "number": "2536",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2536.png"
+  },
+  {
+   "name": "살구씨",
+   "number": "2646",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2646.png"
+  },
+  {
+   "name": "삼",
+   "number": "2555",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2555.png"
+  },
+  {
+   "name": "삼치",
+   "number": "2836",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2836.png"
+  },
+  {
+   "name": "상아",
+   "number": "2603",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2603.png"
+  },
+  {
+   "name": "상아세공",
+   "number": "2539",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2539.png"
+  },
+  {
+   "name": "새우",
+   "number": "2837",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2837.png"
+  },
+  {
+   "name": "샐러리",
+   "number": "2667",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2667.png"
+  },
+  {
+   "name": "샐비어",
+   "number": "2647",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2647.png"
+  },
+  {
+   "name": "생강",
+   "number": "2668",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2668.png"
+  },
+  {
+   "name": "생사",
+   "number": "2556",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2556.png"
+  },
+  {
+   "name": "서양 서적",
+   "number": "2775",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2775.png"
+  },
+  {
+   "name": "서양갑옷",
+   "number": "2679",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "브리튼 섬",
+   "icon": "data/icons/2679.png"
+  },
+  {
+   "name": "서진 직물",
+   "number": "3048",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3048.png"
+  },
+  {
+   "name": "석류",
+   "number": "2584",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2584.png"
+  },
+  {
+   "name": "석류석",
+   "number": "2604",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2604.png"
+  },
+  {
+   "name": "석상",
+   "number": "2703",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2703.png"
+  },
+  {
+   "name": "석유",
+   "number": "2761",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2761.png"
+  },
+  {
+   "name": "석재",
+   "number": "2762",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2762.png"
+  },
+  {
+   "name": "석탄",
+   "number": "2763",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2763.png"
+  },
+  {
+   "name": "선인장",
+   "number": "2972",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2972.png"
+  },
+  {
+   "name": "설탕",
+   "number": "2781",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2781.png"
+  },
+  {
+   "name": "설화석고",
+   "number": "2764",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2764.png"
+  },
+  {
+   "name": "성대",
+   "number": "2838",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2838.png"
+  },
+  {
+   "name": "센나",
+   "number": "2648",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2648.png"
+  },
+  {
+   "name": "소",
+   "number": "2616",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2616.png"
+  },
+  {
+   "name": "소금",
+   "number": "2782",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2782.png"
+  },
+  {
+   "name": "소바",
+   "number": "3040",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3040.png"
+  },
+  {
+   "name": "소시지",
+   "number": "2839",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2839.png"
+  },
+  {
+   "name": "소주",
+   "number": "3026",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/3026.png"
+  },
+  {
+   "name": "소하르 탱",
+   "number": "3430551",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3430551.png"
+  },
+  {
+   "name": "소흥주",
+   "number": "3091",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3091.png"
+  },
+  {
+   "name": "송백자",
+   "number": "3106",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3106.png"
+  },
+  {
+   "name": "쇠고기",
+   "number": "2840",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2840.png"
+  },
+  {
+   "name": "쇼로우",
+   "number": "3079",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3079.png"
+  },
+  {
+   "name": "수선화",
+   "number": "2714",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "서아시아",
+   "icon": "data/icons/2714.png"
+  },
+  {
+   "name": "수은",
+   "number": "2765",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2765.png"
+  },
+  {
+   "name": "수은제",
+   "number": "2547",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "이베리아",
+   "icon": "data/icons/2547.png"
+  },
+  {
+   "name": "수정",
+   "number": "2605",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2605.png"
+  },
+  {
+   "name": "순무",
+   "number": "2841",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2841.png"
+  },
+  {
+   "name": "숭어",
+   "number": "2842",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2842.png"
+  },
+  {
+   "name": "숭어알 젓갈",
+   "number": "3069",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "대만 섬",
+   "icon": "data/icons/3069.png"
+  },
+  {
+   "name": "쉐리",
+   "number": "2735",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "이베리아",
+   "icon": "data/icons/2735.png"
+  },
+  {
+   "name": "스타아니스",
+   "number": "3097",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "화남",
+   "icon": "data/icons/3097.png"
+  },
+  {
+   "name": "스테인레스 스틸",
+   "number": "1017022",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1017022.png"
+  },
+  {
+   "name": "시더우드",
+   "number": "2715",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2715.png"
+  },
+  {
+   "name": "시베트",
+   "number": "2716",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2716.png"
+  },
+  {
+   "name": "식물성 기름",
+   "number": "2766",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2766.png"
+  },
+  {
+   "name": "쏨뱅이",
+   "number": "2843",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2843.png"
+  },
+  {
+   "name": "쐐기풀",
+   "number": "3558128",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3558128.png"
+  },
+  {
+   "name": "아니스",
+   "number": "2649",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2649.png"
+  },
+  {
+   "name": "아로와나",
+   "number": "2881",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2881.png"
+  },
+  {
+   "name": "아마",
+   "number": "2557",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "북유럽",
+   "icon": "data/icons/2557.png"
+  },
+  {
+   "name": "아몬드",
+   "number": "2630",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "이베리아",
+   "icon": "data/icons/2630.png"
+  },
+  {
+   "name": "아몬드유",
+   "number": "2783",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2783.png"
+  },
+  {
+   "name": "아스퍼",
+   "number": "3430508",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3430508.png"
+  },
+  {
+   "name": "아연광석",
+   "number": "2749",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2749.png"
+  },
+  {
+   "name": "아와이요",
+   "number": "2987",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2987.png"
+  },
+  {
+   "name": "아이스와인",
+   "number": "241203",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "북미 서해안",
+   "icon": "data/icons/241203.png"
+  },
+  {
+   "name": "아콰비트",
+   "number": "2736",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "북유럽",
+   "icon": "data/icons/2736.png"
+  },
+  {
+   "name": "아프리카 목각",
+   "number": "1909927",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "동아프리카",
+   "icon": "data/icons/1909927.png"
+  },
+  {
+   "name": "악어고기",
+   "number": "2965",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2965.png"
+  },
+  {
+   "name": "안동소주",
+   "number": "2996",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/2996.png"
+  },
+  {
+   "name": "안식향",
+   "number": "2949",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2949.png"
+  },
+  {
+   "name": "안초비",
+   "number": "2989",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2989.png"
+  },
+  {
+   "name": "알렉산드라이트",
+   "number": "59408",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "러시아",
+   "icon": "data/icons/59408.png"
+  },
+  {
+   "name": "알루미늄 합금",
+   "number": "1017015",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1017015.png"
+  },
+  {
+   "name": "알파카",
+   "number": "2991",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2991.png"
+  },
+  {
+   "name": "알파카 고기",
+   "number": "2990",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2990.png"
+  },
+  {
+   "name": "알파카의 털",
+   "number": "2988",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2988.png"
+  },
+  {
+   "name": "애벌레",
+   "number": "2968",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2968.png"
+  },
+  {
+   "name": "애옥",
+   "number": "3074",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3074.png"
+  },
+  {
+   "name": "앵무고기",
+   "number": "2906",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2906.png"
+  },
+  {
+   "name": "야자섬유",
+   "number": "2558",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2558.png"
+  },
+  {
+   "name": "야자술",
+   "number": "2737",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2737.png"
+  },
+  {
+   "name": "야자유",
+   "number": "2784",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2784.png"
+  },
+  {
+   "name": "양",
+   "number": "2617",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2617.png"
+  },
+  {
+   "name": "양고기",
+   "number": "2844",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2844.png"
+  },
+  {
+   "name": "양마",
+   "number": "2559",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2559.png"
+  },
+  {
+   "name": "양모",
+   "number": "2560",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2560.png"
+  },
+  {
+   "name": "양손검",
+   "number": "2680",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2680.png"
+  },
+  {
+   "name": "양주 밤",
+   "number": "3036",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3036.png"
+  },
+  {
+   "name": "양지백옥",
+   "number": "3105",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "화남",
+   "icon": "data/icons/3105.png"
+  },
+  {
+   "name": "양파",
+   "number": "2845",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2845.png"
+  },
+  {
+   "name": "양피지",
+   "number": "2767",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "발칸",
+   "icon": "data/icons/2767.png"
+  },
+  {
+   "name": "어육",
+   "number": "2543",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2543.png"
+  },
+  {
+   "name": "엄선 북투석",
+   "number": "3983418",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "대만 섬",
+   "icon": "data/icons/3983418.png"
+  },
+  {
+   "name": "엄선 사마 은",
+   "number": "3983416",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "일본",
+   "icon": "data/icons/3983416.png"
+  },
+  {
+   "name": "엄선 사슴 가죽",
+   "number": "3983406",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "대만 섬",
+   "icon": "data/icons/3983406.png"
+  },
+  {
+   "name": "엄선 양지백옥",
+   "number": "3983422",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "화남",
+   "icon": "data/icons/3983422.png"
+  },
+  {
+   "name": "엄선 자근",
+   "number": "3983410",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3983410.png"
+  },
+  {
+   "name": "엄선 해당화",
+   "number": "3983412",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3983412.png"
+  },
+  {
+   "name": "에메랄드",
+   "number": "2606",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2606.png"
+  },
+  {
+   "name": "에메랄드 원석",
+   "number": "1521358",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521358.png"
+  },
+  {
+   "name": "연어",
+   "number": "2846",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2846.png"
+  },
+  {
+   "name": "열빙어",
+   "number": "243027",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/243027.png"
+  },
+  {
+   "name": "염소",
+   "number": "2618",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2618.png"
+  },
+  {
+   "name": "오레가노",
+   "number": "2669",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2669.png"
+  },
+  {
+   "name": "오렌지오일",
+   "number": "2717",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "동아프리카",
+   "icon": "data/icons/2717.png"
+  },
+  {
+   "name": "오리",
+   "number": "2619",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2619.png"
+  },
+  {
+   "name": "오리고기",
+   "number": "2793",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2793.png"
+  },
+  {
+   "name": "오배자",
+   "number": "3046",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3046.png"
+  },
+  {
+   "name": "오수",
+   "number": "3112",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3112.png"
+  },
+  {
+   "name": "오징어",
+   "number": "2847",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2847.png"
+  },
+  {
+   "name": "오크모스",
+   "number": "2718",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "발칸",
+   "icon": "data/icons/2718.png"
+  },
+  {
+   "name": "오팔",
+   "number": "2921",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2921.png"
+  },
+  {
+   "name": "옥돔",
+   "number": "3066",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3066.png"
+  },
+  {
+   "name": "옥수수",
+   "number": "2848",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2848.png"
+  },
+  {
+   "name": "올리브",
+   "number": "2849",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2849.png"
+  },
+  {
+   "name": "올리브유",
+   "number": "2785",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2785.png"
+  },
+  {
+   "name": "올스파이스",
+   "number": "2910",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2910.png"
+  },
+  {
+   "name": "옻나무",
+   "number": "3019",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3019.png"
+  },
+  {
+   "name": "와인",
+   "number": "2738",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2738.png"
+  },
+  {
+   "name": "와인 비니거",
+   "number": "2786",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2786.png"
+  },
+  {
+   "name": "왁스",
+   "number": "2768",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2768.png"
+  },
+  {
+   "name": "왕연어",
+   "number": "64257",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/64257.png"
+  },
+  {
+   "name": "용뇌",
+   "number": "2719",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2719.png"
+  },
+  {
+   "name": "용연향",
+   "number": "2720",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2720.png"
+  },
+  {
+   "name": "용혈",
+   "number": "3125",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "아랍",
+   "icon": "data/icons/3125.png"
+  },
+  {
+   "name": "우유",
+   "number": "2850",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2850.png"
+  },
+  {
+   "name": "운남 은",
+   "number": "3103",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "화남",
+   "icon": "data/icons/3103.png"
+  },
+  {
+   "name": "워드",
+   "number": "2585",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2585.png"
+  },
+  {
+   "name": "월계수",
+   "number": "2670",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "발칸",
+   "icon": "data/icons/2670.png"
+  },
+  {
+   "name": "월장석",
+   "number": "2962900",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2962900.png"
+  },
+  {
+   "name": "월하향",
+   "number": "2721",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2721.png"
+  },
+  {
+   "name": "위스키",
+   "number": "2739",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "브리튼 섬",
+   "icon": "data/icons/2739.png"
+  },
+  {
+   "name": "유럽 가재",
+   "number": "3558123",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3558123.png"
+  },
+  {
+   "name": "유럽메기",
+   "number": "2851",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2851.png"
+  },
+  {
+   "name": "유리세공",
+   "number": "2695",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2695.png"
+  },
+  {
+   "name": "유리알",
+   "number": "2696",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2696.png"
+  },
+  {
+   "name": "유자",
+   "number": "3047",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "일본",
+   "icon": "data/icons/3047.png"
+  },
+  {
+   "name": "유채화",
+   "number": "2704",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2704.png"
+  },
+  {
+   "name": "유칼리",
+   "number": "2962",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "오세아니아",
+   "icon": "data/icons/2962.png"
+  },
+  {
+   "name": "유향",
+   "number": "2722",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "아랍",
+   "icon": "data/icons/2722.png"
+  },
+  {
+   "name": "유황",
+   "number": "2769",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2769.png"
+  },
+  {
+   "name": "육두구",
+   "number": "2926",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2926.png"
+  },
+  {
+   "name": "은",
+   "number": "2593",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2593.png"
+  },
+  {
+   "name": "은대구",
+   "number": "62632",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/62632.png"
+  },
+  {
+   "name": "은방울꽃",
+   "number": "2723",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "독일",
+   "icon": "data/icons/2723.png"
+  },
+  {
+   "name": "은세공",
+   "number": "2697",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2697.png"
+  },
+  {
+   "name": "은식기",
+   "number": "3128",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/3128.png"
+  },
+  {
+   "name": "은어",
+   "number": "3061",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3061.png"
+  },
+  {
+   "name": "이빨다랑어",
+   "number": "2895",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2895.png"
+  },
+  {
+   "name": "이슬람 번역서",
+   "number": "2951",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2951.png"
+  },
+  {
+   "name": "인도 꼭두서니",
+   "number": "2586",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "인도",
+   "icon": "data/icons/2586.png"
+  },
+  {
+   "name": "인도 쪽",
+   "number": "2587",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "인도",
+   "icon": "data/icons/2587.png"
+  },
+  {
+   "name": "인도 편사",
+   "number": "2575",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "인도",
+   "icon": "data/icons/2575.png"
+  },
+  {
+   "name": "인삼",
+   "number": "3016",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3016.png"
+  },
+  {
+   "name": "일랑일랑",
+   "number": "2724",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "동아프리카",
+   "icon": "data/icons/2724.png"
+  },
+  {
+   "name": "일본 비단",
+   "number": "3031",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3031.png"
+  },
+  {
+   "name": "일본 서적",
+   "number": "3054",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3054.png"
+  },
+  {
+   "name": "일본갑옷",
+   "number": "3032",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3032.png"
+  },
+  {
+   "name": "일본도",
+   "number": "3055",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3055.png"
+  },
+  {
+   "name": "일본화",
+   "number": "3053",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3053.png"
+  },
+  {
+   "name": "일본활",
+   "number": "3035",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3035.png"
+  },
+  {
+   "name": "잇꽃",
+   "number": "2588",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "서아시아",
+   "icon": "data/icons/2588.png"
+  },
+  {
+   "name": "잉어",
+   "number": "3062",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3062.png"
+  },
+  {
+   "name": "잉카 로즈",
+   "number": "2986",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2986.png"
+  },
+  {
+   "name": "자근",
+   "number": "3018",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3018.png"
+  },
+  {
+   "name": "자단",
+   "number": "1909748",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "인도",
+   "icon": "data/icons/1909748.png"
+  },
+  {
+   "name": "자리돔",
+   "number": "2852",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2852.png"
+  },
+  {
+   "name": "자바 편사",
+   "number": "2931",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "동남아시아",
+   "icon": "data/icons/2931.png"
+  },
+  {
+   "name": "자수실",
+   "number": "2698",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2698.png"
+  },
+  {
+   "name": "자수정",
+   "number": "3051",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "일본",
+   "icon": "data/icons/3051.png"
+  },
+  {
+   "name": "자수정 원석",
+   "number": "1521366",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1521366.png"
+  },
+  {
+   "name": "자스민",
+   "number": "2726",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2726.png"
+  },
+  {
+   "name": "작약",
+   "number": "2650",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2650.png"
+  },
+  {
+   "name": "장궁",
+   "number": "2681",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2681.png"
+  },
+  {
+   "name": "장미",
+   "number": "2725",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2725.png"
+  },
+  {
+   "name": "장미퉁돔",
+   "number": "2935",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2935.png"
+  },
+  {
+   "name": "잼",
+   "number": "2787",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2787.png"
+  },
+  {
+   "name": "잿방어",
+   "number": "2853",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2853.png"
+  },
+  {
+   "name": "쟘부",
+   "number": "2892",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2892.png"
+  },
+  {
+   "name": "적동광",
+   "number": "3104",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3104.png"
+  },
+  {
+   "name": "적색연금약액",
+   "number": "2917",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2917.png"
+  },
+  {
+   "name": "전갱이",
+   "number": "2854",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2854.png"
+  },
+  {
+   "name": "전기메기",
+   "number": "2855",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2855.png"
+  },
+  {
+   "name": "정어리",
+   "number": "2856",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2856.png"
+  },
+  {
+   "name": "제라늄",
+   "number": "2727",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "서아프리카",
+   "icon": "data/icons/2727.png"
+  },
+  {
+   "name": "조선 서적",
+   "number": "3012",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3012.png"
+  },
+  {
+   "name": "조선 은",
+   "number": "3004",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "조선",
+   "icon": "data/icons/3004.png"
+  },
+  {
+   "name": "조선차",
+   "number": "3014",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3014.png"
+  },
+  {
+   "name": "조젯",
+   "number": "2576",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2576.png"
+  },
+  {
+   "name": "종이",
+   "number": "2533",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2533.png"
+  },
+  {
+   "name": "주석(교역품)",
+   "number": "2750",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2750.png"
+  },
+  {
+   "name": "주철",
+   "number": "1017304",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1017304.png"
+  },
+  {
+   "name": "중국 서적",
+   "number": "3108",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3108.png"
+  },
+  {
+   "name": "중국 서화",
+   "number": "3107",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3107.png"
+  },
+  {
+   "name": "중국 양탄자",
+   "number": "3027",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3027.png"
+  },
+  {
+   "name": "중국비단",
+   "number": "3102",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3102.png"
+  },
+  {
+   "name": "중국차",
+   "number": "3096",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3096.png"
+  },
+  {
+   "name": "중국화",
+   "number": "2705",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/2705.png"
+  },
+  {
+   "name": "중유",
+   "number": "1017056",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1017056.png"
+  },
+  {
+   "name": "중화면",
+   "number": "3092",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3092.png"
+  },
+  {
+   "name": "쥐",
+   "number": "2970",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2970.png"
+  },
+  {
+   "name": "쥐노래미",
+   "number": "3067",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3067.png"
+  },
+  {
+   "name": "지렁이",
+   "number": "2975",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2975.png"
+  },
+  {
+   "name": "진",
+   "number": "2740",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "네덜란드",
+   "icon": "data/icons/2740.png"
+  },
+  {
+   "name": "진과스 금",
+   "number": "3082",
+   "category": "귀금속",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3082.png"
+  },
+  {
+   "name": "진달래",
+   "number": "3009",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "조선",
+   "icon": "data/icons/3009.png"
+  },
+  {
+   "name": "진사",
+   "number": "2751",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2751.png"
+  },
+  {
+   "name": "진주",
+   "number": "2607",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2607.png"
+  },
+  {
+   "name": "진주조개",
+   "number": "2857",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2857.png"
+  },
+  {
+   "name": "차이니즈 바바바",
+   "number": "3431779",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3431779.png"
+  },
+  {
+   "name": "참다시마",
+   "number": "2997",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/2997.png"
+  },
+  {
+   "name": "참돔",
+   "number": "2858",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2858.png"
+  },
+  {
+   "name": "찹쌀",
+   "number": "2998",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2998.png"
+  },
+  {
+   "name": "창꼬치",
+   "number": "2859",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2859.png"
+  },
+  {
+   "name": "철갑상어",
+   "number": "2860",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2860.png"
+  },
+  {
+   "name": "철광석",
+   "number": "2752",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2752.png"
+  },
+  {
+   "name": "철재",
+   "number": "2770",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2770.png"
+  },
+  {
+   "name": "청금석",
+   "number": "2608",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "페르시아",
+   "icon": "data/icons/2608.png"
+  },
+  {
+   "name": "청동",
+   "number": "2771",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2771.png"
+  },
+  {
+   "name": "청동상",
+   "number": "2706",
+   "category": "미술품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2706.png"
+  },
+  {
+   "name": "청룡도",
+   "number": "3109",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3109.png"
+  },
+  {
+   "name": "청상아리",
+   "number": "2861",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2861.png"
+  },
+  {
+   "name": "청새치",
+   "number": "2862",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2862.png"
+  },
+  {
+   "name": "청어",
+   "number": "2863",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2863.png"
+  },
+  {
+   "name": "청주",
+   "number": "3039",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3039.png"
+  },
+  {
+   "name": "초롱",
+   "number": "3060",
+   "category": "잡화",
+   "categoryNumber": 1,
+   "culture": "일본",
+   "icon": "data/icons/3060.png"
+  },
+  {
+   "name": "초석",
+   "number": "2753",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2753.png"
+  },
+  {
+   "name": "치자나무",
+   "number": "3043",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "일본",
+   "icon": "data/icons/3043.png"
+  },
+  {
+   "name": "치즈",
+   "number": "2544",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2544.png"
+  },
+  {
+   "name": "치클",
+   "number": "3126",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/3126.png"
+  },
+  {
+   "name": "칠기",
+   "number": "3052",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3052.png"
+  },
+  {
+   "name": "칠성장어",
+   "number": "242004",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/242004.png"
+  },
+  {
+   "name": "침향",
+   "number": "2886",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2886.png"
+  },
+  {
+   "name": "카모밀",
+   "number": "2651",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "네덜란드",
+   "icon": "data/icons/2651.png"
+  },
+  {
+   "name": "카사바",
+   "number": "2893",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2893.png"
+  },
+  {
+   "name": "카우아이",
+   "number": "2981",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2981.png"
+  },
+  {
+   "name": "카카오",
+   "number": "2631",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/2631.png"
+  },
+  {
+   "name": "캄프치나무",
+   "number": "2909",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2909.png"
+  },
+  {
+   "name": "캐비아",
+   "number": "2920",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "터키",
+   "icon": "data/icons/2920.png"
+  },
+  {
+   "name": "캐슈넛",
+   "number": "2916",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2916.png"
+  },
+  {
+   "name": "캐시미어",
+   "number": "1909574",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "인도",
+   "icon": "data/icons/1909574.png"
+  },
+  {
+   "name": "캣아이",
+   "number": "2609",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2609.png"
+  },
+  {
+   "name": "캥거루고기",
+   "number": "2966",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "오세아니아",
+   "icon": "data/icons/2966.png"
+  },
+  {
+   "name": "커민",
+   "number": "2671",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2671.png"
+  },
+  {
+   "name": "커피",
+   "number": "2632",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2632.png"
+  },
+  {
+   "name": "코르덴",
+   "number": "2577",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2577.png"
+  },
+  {
+   "name": "코리안더",
+   "number": "2672",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2672.png"
+  },
+  {
+   "name": "코뿔소뿔",
+   "number": "2930",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "동아프리카",
+   "icon": "data/icons/2930.png"
+  },
+  {
+   "name": "코치닐선인장",
+   "number": "2908",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2908.png"
+  },
+  {
+   "name": "코코넛",
+   "number": "2633",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2633.png"
+  },
+  {
+   "name": "코코넛비니거",
+   "number": "2944",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2944.png"
+  },
+  {
+   "name": "코크스",
+   "number": "1016976",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1016976.png"
+  },
+  {
+   "name": "콜치캄",
+   "number": "2652",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "터키",
+   "icon": "data/icons/2652.png"
+  },
+  {
+   "name": "콩",
+   "number": "2945",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2945.png"
+  },
+  {
+   "name": "쿠엔카 타일",
+   "number": "3130",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "이베리아",
+   "icon": "data/icons/3130.png"
+  },
+  {
+   "name": "크랜베리",
+   "number": "3116",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "북미 동해안",
+   "icon": "data/icons/3116.png"
+  },
+  {
+   "name": "크로브",
+   "number": "2927",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2927.png"
+  },
+  {
+   "name": "크로스보우",
+   "number": "2682",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2682.png"
+  },
+  {
+   "name": "크롬 광석",
+   "number": "1016991",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/1016991.png"
+  },
+  {
+   "name": "큰양놀래기",
+   "number": "2942",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2942.png"
+  },
+  {
+   "name": "키누아",
+   "number": "2992",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2992.png"
+  },
+  {
+   "name": "타네가시마 총",
+   "number": "3056",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "일본",
+   "icon": "data/icons/3056.png"
+  },
+  {
+   "name": "타로토란",
+   "number": "2943",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "동남아시아",
+   "icon": "data/icons/2943.png"
+  },
+  {
+   "name": "타마린드",
+   "number": "2940",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "동아프리카",
+   "icon": "data/icons/2940.png"
+  },
+  {
+   "name": "타임",
+   "number": "2673",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2673.png"
+  },
+  {
+   "name": "타폰",
+   "number": "2864",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2864.png"
+  },
+  {
+   "name": "타프타",
+   "number": "2578",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "페르시아",
+   "icon": "data/icons/2578.png"
+  },
+  {
+   "name": "탄환",
+   "number": "2686",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2686.png"
+  },
+  {
+   "name": "터메릭",
+   "number": "2589",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "인도",
+   "icon": "data/icons/2589.png"
+  },
+  {
+   "name": "터키 융단",
+   "number": "2579",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "터키",
+   "icon": "data/icons/2579.png"
+  },
+  {
+   "name": "터키석",
+   "number": "2610",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "페르시아",
+   "icon": "data/icons/2610.png"
+  },
+  {
+   "name": "테라피아",
+   "number": "2865",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2865.png"
+  },
+  {
+   "name": "토끼털",
+   "number": "2561",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2561.png"
+  },
+  {
+   "name": "토란",
+   "number": "3033",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3033.png"
+  },
+  {
+   "name": "토르마린",
+   "number": "3127",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "북미 동해안",
+   "icon": "data/icons/3127.png"
+  },
+  {
+   "name": "토마토",
+   "number": "2894",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2894.png"
+  },
+  {
+   "name": "토우진비에",
+   "number": "1909893",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "서아프리카",
+   "icon": "data/icons/1909893.png"
+  },
+  {
+   "name": "토파즈",
+   "number": "2611",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "중남미 동해안",
+   "icon": "data/icons/2611.png"
+  },
+  {
+   "name": "톱상어",
+   "number": "2980",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2980.png"
+  },
+  {
+   "name": "통나무",
+   "number": "2772",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2772.png"
+  },
+  {
+   "name": "투척 폭탄",
+   "number": "3003",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3003.png"
+  },
+  {
+   "name": "툼바가",
+   "number": "2985",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2985.png"
+  },
+  {
+   "name": "퉁돔",
+   "number": "2967",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2967.png"
+  },
+  {
+   "name": "트위드",
+   "number": "2580",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2580.png"
+  },
+  {
+   "name": "특선 라한과",
+   "number": "3983398",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3983398.png"
+  },
+  {
+   "name": "특선 소흥주",
+   "number": "3983392",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3983392.png"
+  },
+  {
+   "name": "특선 양주 밤",
+   "number": "3983396",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3983396.png"
+  },
+  {
+   "name": "특선 조선인삼",
+   "number": "3983404",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3983404.png"
+  },
+  {
+   "name": "특선 중국차",
+   "number": "3983400",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "화남",
+   "icon": "data/icons/3983400.png"
+  },
+  {
+   "name": "특선 한우",
+   "number": "3983394",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3983394.png"
+  },
+  {
+   "name": "특선 홍두",
+   "number": "3983402",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3983402.png"
+  },
+  {
+   "name": "티트리",
+   "number": "2964",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "오세아니아",
+   "icon": "data/icons/2964.png"
+  },
+  {
+   "name": "파셀리",
+   "number": "2674",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2674.png"
+  },
+  {
+   "name": "파스타",
+   "number": "2866",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2866.png"
+  },
+  {
+   "name": "파이 반죽",
+   "number": "2867",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2867.png"
+  },
+  {
+   "name": "파인애플",
+   "number": "2634",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "카리브 해",
+   "icon": "data/icons/2634.png"
+  },
+  {
+   "name": "파초",
+   "number": "3099",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3099.png"
+  },
+  {
+   "name": "파파야",
+   "number": "2925",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2925.png"
+  },
+  {
+   "name": "파피루스",
+   "number": "2773",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "북아프리카",
+   "icon": "data/icons/2773.png"
+  },
+  {
+   "name": "판야",
+   "number": "2954",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "동남아시아",
+   "icon": "data/icons/2954.png"
+  },
+  {
+   "name": "팥",
+   "number": "3020",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3020.png"
+  },
+  {
+   "name": "팥소",
+   "number": "2999",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2999.png"
+  },
+  {
+   "name": "패츌리",
+   "number": "2937",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "인도차이나",
+   "icon": "data/icons/2937.png"
+  },
+  {
+   "name": "페르시아 융단",
+   "number": "2581",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "페르시아",
+   "icon": "data/icons/2581.png"
+  },
+  {
+   "name": "페르시안베리",
+   "number": "2590",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2590.png"
+  },
+  {
+   "name": "페헤레이",
+   "number": "2897",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2897.png"
+  },
+  {
+   "name": "펠트",
+   "number": "59406",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "러시아",
+   "icon": "data/icons/59406.png"
+  },
+  {
+   "name": "포탄",
+   "number": "2687",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2687.png"
+  },
+  {
+   "name": "푸른색 광석",
+   "number": "2754",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2754.png"
+  },
+  {
+   "name": "푸스틱",
+   "number": "2907",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2907.png"
+  },
+  {
+   "name": "풀",
+   "number": "2537",
+   "category": "염료",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2537.png"
+  },
+  {
+   "name": "풋고추",
+   "number": "2928",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "중남미 서해안",
+   "icon": "data/icons/2928.png"
+  },
+  {
+   "name": "프란넬",
+   "number": "2582",
+   "category": "직물",
+   "categoryNumber": 3,
+   "culture": "브리튼 섬",
+   "icon": "data/icons/2582.png"
+  },
+  {
+   "name": "플레코스토무스",
+   "number": "2984",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2984.png"
+  },
+  {
+   "name": "피라니아",
+   "number": "2883",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2883.png"
+  },
+  {
+   "name": "피라루크",
+   "number": "2882",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2882.png"
+  },
+  {
+   "name": "피스타치오",
+   "number": "2932",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "아랍",
+   "icon": "data/icons/2932.png"
+  },
+  {
+   "name": "피시 소스",
+   "number": "2939",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "인도차이나",
+   "icon": "data/icons/2939.png"
+  },
+  {
+   "name": "피클",
+   "number": "2635",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2635.png"
+  },
+  {
+   "name": "피혁",
+   "number": "2562",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2562.png"
+  },
+  {
+   "name": "피혁제품",
+   "number": "2699",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2699.png"
+  },
+  {
+   "name": "핑크 다이아몬드",
+   "number": "2978",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "오세아니아",
+   "icon": "data/icons/2978.png"
+  },
+  {
+   "name": "하석",
+   "number": "2977",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2977.png"
+  },
+  {
+   "name": "한손검",
+   "number": "2683",
+   "category": "무기류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2683.png"
+  },
+  {
+   "name": "한우",
+   "number": "3001",
+   "category": "가축",
+   "categoryNumber": 1,
+   "culture": "조선",
+   "icon": "data/icons/3001.png"
+  },
+  {
+   "name": "한지",
+   "number": "3013",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "조선",
+   "icon": "data/icons/3013.png"
+  },
+  {
+   "name": "해당화",
+   "number": "3080",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3080.png"
+  },
+  {
+   "name": "해수",
+   "number": "2788",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2788.png"
+  },
+  {
+   "name": "해초",
+   "number": "2869",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2869.png"
+  },
+  {
+   "name": "햄",
+   "number": "2870",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2870.png"
+  },
+  {
+   "name": "향목",
+   "number": "2728",
+   "category": "향료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2728.png"
+  },
+  {
+   "name": "향쑥",
+   "number": "2653",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2653.png"
+  },
+  {
+   "name": "허브 기름",
+   "number": "2789",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2789.png"
+  },
+  {
+   "name": "허브 비니거",
+   "number": "2790",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2790.png"
+  },
+  {
+   "name": "허브 소금",
+   "number": "2791",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2791.png"
+  },
+  {
+   "name": "헤이즐넛",
+   "number": "2636",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2636.png"
+  },
+  {
+   "name": "혀가자미",
+   "number": "2871",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2871.png"
+  },
+  {
+   "name": "호두",
+   "number": "2637",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "이탈리아/남프랑스",
+   "icon": "data/icons/2637.png"
+  },
+  {
+   "name": "호밀",
+   "number": "2872",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2872.png"
+  },
+  {
+   "name": "호박(보석)",
+   "number": "2612",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "북유럽",
+   "icon": "data/icons/2612.png"
+  },
+  {
+   "name": "호박(식료품)",
+   "number": "2873",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2873.png"
+  },
+  {
+   "name": "호안석",
+   "number": "3006",
+   "category": "보석",
+   "categoryNumber": 4,
+   "culture": "조선",
+   "icon": "data/icons/3006.png"
+  },
+  {
+   "name": "호피",
+   "number": "3002",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "조선",
+   "icon": "data/icons/3002.png"
+  },
+  {
+   "name": "호필",
+   "number": "3114",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "화남",
+   "icon": "data/icons/3114.png"
+  },
+  {
+   "name": "홍대치",
+   "number": "3034",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/3034.png"
+  },
+  {
+   "name": "홍두",
+   "number": "3076",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "대만 섬",
+   "icon": "data/icons/3076.png"
+  },
+  {
+   "name": "홍차",
+   "number": "2638",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "인도",
+   "icon": "data/icons/2638.png"
+  },
+  {
+   "name": "홍합",
+   "number": "2874",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2874.png"
+  },
+  {
+   "name": "화승총",
+   "number": "2688",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2688.png"
+  },
+  {
+   "name": "화약",
+   "number": "2689",
+   "category": "총포류",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2689.png"
+  },
+  {
+   "name": "화이트 비니거",
+   "number": "2792",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2792.png"
+  },
+  {
+   "name": "화지",
+   "number": "3057",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "일본",
+   "icon": "data/icons/3057.png"
+  },
+  {
+   "name": "황동 세공",
+   "number": "1909755",
+   "category": "공예품",
+   "categoryNumber": 3,
+   "culture": "인도",
+   "icon": "data/icons/1909755.png"
+  },
+  {
+   "name": "황마",
+   "number": "2563",
+   "category": "섬유",
+   "categoryNumber": 3,
+   "culture": "",
+   "icon": "data/icons/2563.png"
+  },
+  {
+   "name": "황어",
+   "number": "2875",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2875.png"
+  },
+  {
+   "name": "후르츠 브랜디",
+   "number": "2741",
+   "category": "주류",
+   "categoryNumber": 2,
+   "culture": "프랑스 북부",
+   "icon": "data/icons/2741.png"
+  },
+  {
+   "name": "후추",
+   "number": "2675",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "인도",
+   "icon": "data/icons/2675.png"
+  },
+  {
+   "name": "휀넬",
+   "number": "2676",
+   "category": "향신료",
+   "categoryNumber": 4,
+   "culture": "",
+   "icon": "data/icons/2676.png"
+  },
+  {
+   "name": "흑단",
+   "number": "2956",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2956.png"
+  },
+  {
+   "name": "흑색연금약액",
+   "number": "2918",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2918.png"
+  },
+  {
+   "name": "흑식초",
+   "number": "3022",
+   "category": "조미료",
+   "categoryNumber": 1,
+   "culture": "화남",
+   "icon": "data/icons/3022.png"
+  },
+  {
+   "name": "흑연",
+   "number": "2774",
+   "category": "공업품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2774.png"
+  },
+  {
+   "name": "흑점줄전갱이",
+   "number": "2876",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2876.png"
+  },
+  {
+   "name": "흰 꼴뚜기",
+   "number": "2995",
+   "category": "식료품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2995.png"
+  },
+  {
+   "name": "흰 꽃",
+   "number": "2639",
+   "category": "기호품",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2639.png"
+  },
+  {
+   "name": "흰색 광석",
+   "number": "2755",
+   "category": "광석",
+   "categoryNumber": 2,
+   "culture": "",
+   "icon": "data/icons/2755.png"
+  },
+  {
+   "name": "흰색연금약액",
+   "number": "2924",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "",
+   "icon": "data/icons/2924.png"
+  },
+  {
+   "name": "히스",
+   "number": "2654",
+   "category": "의약품",
+   "categoryNumber": 1,
+   "culture": "북유럽",
+   "icon": "data/icons/2654.png"
+  }
+ ]
+}

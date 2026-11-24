@@ -1,0 +1,3 @@
+# C 런타임을 exe 안에 넣는다(정적 링크)
+[build]
+rustflags = ["-C", "target-feature=+crt-static"]

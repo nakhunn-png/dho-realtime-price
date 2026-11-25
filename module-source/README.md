@@ -14,7 +14,7 @@ DHO Navigator 모듈 "타이거냥이 시세공유 및 남만 모듈"(com.tigern
 - `rust/crates/recog` — 화면 글자·숫자 인식
 - `rust/crates/capture` — 게임 창 캡처
 - `rust/crates/netaddr` — 접속한 게임 서버 주소로 서버 판별
-- `rust/crates/gamji/src/{config,cloud}.rs` — 설정 읽기, Firebase 업로드
+- `rust/crates/gamji/src/{config,cloud,nav}.rs` — 설정 읽기, Firebase 업로드, 웹 지도 네비(127.0.0.1 /api/nav)
 - `web/config.js`, `web/data/*.json` — 빌드할 때 exe 안에 들어가는 공개 설정·품목·도시 목록
 
 ## 빌드 (Windows x86_64, Rust 2024 edition)

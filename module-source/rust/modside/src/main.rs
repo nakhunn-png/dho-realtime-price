@@ -24,6 +24,10 @@ mod config;
 #[path = "../../crates/gamji/src/cloud.rs"]
 #[allow(dead_code)]
 mod cloud;
+/// 1.0.5: 웹 지도 네비 (감지기와 같은 /api/nav 서버)
+#[path = "../../crates/gamji/src/nav.rs"]
+#[allow(dead_code)]
+mod nav;
 mod ask;
 mod hud;
 mod nb;
@@ -71,8 +75,6 @@ fn set_name(v: &Value) {
 /// 모듈 카드 '폴더 열기'로 열어 메모장으로 적는다. '#' 으로 시작하는 줄과 빈 줄은 건너뛴다
 const NAME_FILE: &str = "캐릭터이름.txt";
 
-/// 1.0.4: 게임 창에 다시 붙은 뒤 바다인지 모르는 동안 HUD 를 보류하는 최대 시간
-const HOLD_SEC: f64 = 5.0;
 
 fn name_file_init(data: &Option<PathBuf>) {
     let Some(d) = data else { return };
@@ -125,7 +127,7 @@ fn say_out(msg: &str) {
 use hud::{Hud, MUTED, WARN, p, pb, server_color};
 use reader::{Event, Reader};
 use serde_json::{Value, json};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::io::{self, BufRead, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -136,6 +138,69 @@ const FAST_MS: u64 = 100;
 const SLOW_MS: u64 = 2500;
 /// 남만무역정보 창이 열려 있을 때 (분류를 방향키로 넘기면 0.03초마다 바뀜, 감지기와 같음)
 const NB_MS: u64 = 15;
+// ---------- 1.0.5 웹 지도 네비 (2026-11-25 사용자: "모듈을 켜도 우리 웹 앱에서도 네비게이션 기능이 작동하도록") ----------
+// 감지기(gamji collector.rs update_nav)와 같은 방법: 바다에서 측량 좌표가 보이면 0.25초마다 읽어 127.0.0.1:38765 /api/nav 로 보낸다.
+// 공유 서버에는 올리지 않는다. 웹사이트 열기 링크에 ?nav=포트 를 붙여, 웹이 이 포트를 기억한다
+const NAV_MS: u64 = 250;
+const NAV_HD_STEP: f64 = 0.5;
+const NAV_HD_JUMP: f64 = 20.0;
+const NAV_LOST_SEC: f64 = 5.0;
+static NAV_PORT: OnceLock<Option<u16>> = OnceLock::new();
+
+/// 두 방향(도)의 차이 (-180~180)
+fn ang_diff(a: f64, b: f64) -> f64 {
+    (a - b + 180.0).rem_euclid(360.0) - 180.0
+}
+
+/// 한 게임 창의 네비 상태 (감지기 St 의 nav_* 칸)
+#[derive(Default)]
+struct NavSt {
+    t_nav: f64,
+    t_sent: f64,
+    xy: Option<(u32, u32)>,
+    hd: Option<f64>,
+    bw: Option<f64>,
+    hd_raw: Option<f64>,
+    town: Option<(String, String)>,
+}
+
+impl NavSt {
+    /// 측량 좌표 하나 → 지도. 좌표를 읽고 있는 중이면 true
+    #[allow(clippy::too_many_arguments)]
+    fn step(&mut self, hub: &nav::NavHub, h: isize, chr: &str, coords: Option<(u32, u32)>, t: f64, heading: Option<f64>, bow: Option<f64>) -> bool {
+        let raw0 = std::mem::replace(&mut self.hd_raw, heading);
+        let mut heading = heading;
+        if let Some(r0) = raw0 {
+            if heading.is_none_or(|hd| ang_diff(hd, r0).abs() > NAV_HD_JUMP) {
+                heading = self.hd;
+            }
+        }
+        if let Some(c) = coords {
+            if self.t_nav == 0.0 {
+                log(&format!("[네비] 측량 좌표를 읽기 시작함 {},{} · 웹 지도에 보냅니다", c.0, c.1));
+            }
+            self.t_nav = t;
+            let moved = |a: Option<f64>, b: Option<f64>| match (a, b) {
+                (Some(a), Some(b)) => ang_diff(a, b).abs() >= NAV_HD_STEP,
+                (None, None) => false,
+                _ => true,
+            };
+            let turned = moved(heading, self.hd) || moved(bow, self.bw);
+            if Some(c) != self.xy || turned || t - self.t_sent > 5.0 {
+                (self.xy, self.hd, self.bw, self.t_sent) = (Some(c), heading, bow, t);
+                hub.update(h, chr, c.0, c.1, t, heading, bow);
+            }
+            true
+        } else if self.t_nav > 0.0 && t - self.t_nav > NAV_LOST_SEC {
+            log("[네비] 측량 좌표가 안 보임");
+            (self.t_nav, self.xy, self.hd, self.bw) = (0.0, None, None, None);
+            hub.drop_ship(h);
+            false
+        } else {
+            self.t_nav > 0.0
+        }
+    }
+}
 /// 남만 도시·분류 이름 강조 색 (감지기 HL_COLOR)
 const HL: u32 = 0xff9a2e;
 const NET_EVERY: f64 = 2.0;
@@ -171,7 +236,13 @@ fn open_site(install: bool) {
         if l.is_some_and(|t| t.elapsed() < Duration::from_secs(2)) { return; }
         *l = Some(std::time::Instant::now());
     }
-    let r = unsafe { ShellExecuteW(None, w!("open"), &HSTRING::from(if install { INSTALL_URL } else { SITE_URL }), None, None, SW_SHOWNORMAL) };
+    // 1.0.5: 웹 지도가 이 PC 의 네비 포트를 기억하게 ?nav=포트 (웹 app.js NAV_PORT)
+    let url = match (install, NAV_PORT.get().copied().flatten()) {
+        (true, _) => INSTALL_URL.to_string(),
+        (false, Some(p)) => format!("{SITE_URL}?nav={p}"),
+        (false, None) => SITE_URL.to_string(),
+    };
+    let r = unsafe { ShellExecuteW(None, w!("open"), &HSTRING::from(url), None, None, SW_SHOWNORMAL) };
     log(&format!("[웹사이트] 열기 {}", if r.0 as isize > 32 { "됨" } else { "실패" }));
 }
 
@@ -503,7 +574,6 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     let mut said_later = false;
     // 1.0.4: 게임 창(pid)마다 HUD 로 알린 캐릭터 이름. 다시 붙어도(해역 이동·창 바꾸기) 지우지 않는다 → 같은 이름이면 다시 안 알림
     let mut announced: std::collections::HashMap<u32, String> = std::collections::HashMap::new();
-    let mut t_conn = 0.0;
     let mut t_game0 = 0.0;
     // 화면 이름 칸에서 마지막으로 읽힌 글자 (입력 창에 미리 채운다)
     let mut seen_name: Option<String> = None;
@@ -516,6 +586,15 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     let mut seen_at = 0.0;
     let mut paused: Option<bool> = None;
     let mut t_exe = 0.0;
+    // 1.0.5: 웹 지도 네비. 서버는 처음 한 번 (감지기 exe 가 먼저 38765 를 쓰고 있으면 다음 번호)
+    let nav_hub = Arc::new(nav::NavHub::default());
+    let port = nav::start_server(nav_hub.clone());
+    log(&match port {
+        Some(p) => format!("[네비] 웹 지도용 127.0.0.1:{p} 열림"),
+        None => "[네비] 포트를 열지 못함 · 웹 지도 네비 꺼짐".into(),
+    });
+    let _ = NAV_PORT.set(port);
+    let mut navs: HashMap<isize, NavSt> = HashMap::new();
     while !stop.load(Ordering::SeqCst) && !GONE.load(Ordering::SeqCst) {
         std::thread::sleep(Duration::from_millis(20));
         let t = now();
@@ -553,9 +632,6 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             (chr, t_chr) = (None, 0.0);
             (verified, miss, matched) = (None, 0, None);
             (t_game0, seen_name) = (now(), None);
-            // 1.0.4: 바다인지 읽을 때까지(최대 HOLD_SEC) 위 줄·알림을 그리지 않는다
-            t_conn = now();
-            hud.set_hold(true);
             hud.set_status(status_parts(&None, false, &None));
             match &want {
                 Some(w) => {
@@ -602,14 +678,34 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         }
         hud.set_tick(rd.tick);
         // 1.0.2: 바다에서는 게임 화면 HUD 를 숨긴다 (도착하면 City 이벤트보다 먼저 풀려 '도착' 알림은 보인다)
-        hud.set_sea(rd.sea);
-        // 1.0.4: 지명을 한 번 읽었거나(바다면 위에서 알림을 지움) 오래 못 읽으면 보류를 푼다
-        hud.set_hold(!rd.place_known && t - t_conn < HOLD_SEC);
+        // 1.0.5: 바다 지명을 읽었을 때가 아니라 '도시를 읽은 상태가 아닐 때' 숨긴다. 바다에서 모듈을 켜거나 게임 창에 다시 붙으면
+        // 바다 지명을 못 읽는 동안 sea 가 false 로 남아 '헬레네' 같은 HUD 가 바다에서 떴다. 도시 HUD 는 도시를 읽은 뒤에만
+        // (이 프레임에서 도시를 새로 읽었으면 rd.city 가 이미 채워져 있어 '도착' 알림은 보인다)
+        hud.set_sea(rd.city.is_none());
+        // 1.0.5: 웹 지도 네비. 교역 창이 열려 있지 않으면 측량 좌표를 읽는다 (감지기와 같음)
+        let coords = if open { None } else { recog::nav::read_coords(&frame.rgb, c.client_offset()) };
+        let (hd, bw) = match coords {
+            Some(_) => (recog::nav::read_heading(&frame.rgb, c.client_offset()), recog::nav::read_bow(&frame.rgb, c.client_offset())),
+            None => (None, None),
+        };
+        let who = matched.clone().or_else(|| chr.clone()).unwrap_or_default();
+        let sailing = navs.entry(tg.hwnd).or_default().step(&nav_hub, tg.hwnd, &who, coords, t, hd, bw);
+        // 지금 안 보는 창(다른 클라이언트로 바뀜)의 배는 좌표가 끊긴 것처럼 지운다
+        navs.retain(|h, s| {
+            let gone = *h != tg.hwnd && t - s.t_nav > NAV_LOST_SEC;
+            if gone && s.t_nav > 0.0 {
+                nav_hub.drop_ship(*h);
+                (s.t_nav, s.xy, s.hd, s.bw) = (0.0, None, None, None);
+            }
+            !gone || s.town.is_some()
+        });
         // 복사 간격: 남만 창 0.015초, 교역 창이 보이면 0.1초, 닫힌 지 1.5초가 지나면 2.5초
         if rd.nb_corner.is_some() {
             c.set_interval(NB_MS);
         } else if open {
             c.set_interval(FAST_MS);
+        } else if sailing {
+            c.set_interval(NAV_MS);
         } else if t - rd.t_trade > 1.5 {
             c.set_interval(SLOW_MS);
         }
@@ -793,6 +889,16 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             }
             if let Event::City(c) = ev {
                 city = c.clone();
+                // 1.0.5: 웹 지도 항해일지가 입항을 바로 마감하도록 (감지기 towns)
+                if let Some(cn) = c {
+                    let who = matched.clone().or_else(|| chr.clone()).unwrap_or_default();
+                    let k = (cn.clone(), who);
+                    let st = navs.entry(tg.hwnd).or_default();
+                    if st.town.as_ref() != Some(&k) {
+                        nav_hub.set_town(tg.hwnd, &k.1, &k.0, t);
+                        st.town = Some(k);
+                    }
+                }
                 hud.set_status(status_parts(&net.server, checked, &city));
             }
             hud_say(&hud, &d);

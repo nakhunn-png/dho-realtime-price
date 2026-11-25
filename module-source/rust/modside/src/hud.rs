@@ -75,12 +75,10 @@ struct State {
     /// 남만 틱 HUD (0.10.0): (캡처 x, 캡처 y = 마지막 점 높이, 틱, 마지막으로 읽은 시각)
     tick: Option<(i64, i64, u8, f64)>,
     /// 1.0.2: 바다에 있음 — 위 줄·알림 모두 숨기고, 그동안 온 알림은 버린다 (항해 중 HUD 가 거슬린다는 말이 많음)
+    /// 1.0.5: '도시를 읽은 상태가 아님'으로 넓힘 (바다에서 켜면 바다 지명을 못 읽어 sea 가 false 로 남던 것)
     sea: bool,
     /// 1.0.4: 패널 'HUD 끄기' — 위 줄·알림만 숨긴다. 남만 틱 HUD 는 그대로 보인다
     off: bool,
-    /// 1.0.4: 게임 창에 다시 붙은 뒤 바다인지 아직 모름 — 알림은 쌓아 두고 그리지 않는다
-    /// (해역을 넘을 때 Navigator 가 대상을 다시 줘서, 그 틈에 바다에서 알림이 새던 것)
-    hold: bool,
 }
 
 // ---------- 남만 틱 HUD (0.10.0, 감지기 ui.rs `tick_hud` 와 같은 모양·자리) ----------
@@ -141,11 +139,6 @@ impl Hud {
             s.queue.clear();
         }
         s.off = off;
-    }
-
-    /// 1.0.4: 바다인지 알 때까지 위 줄·알림을 그리지 않는다
-    pub fn set_hold(&self, hold: bool) {
-        self.0.lock().unwrap().hold = hold;
     }
 
     pub fn say(&self, key: &'static str, parts: Vec<Part>, ms: u64) {
@@ -530,16 +523,15 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
     let t = now();
     let (game, force, rows) = {
         let mut s = st.lock().unwrap();
-        // 보류 중에는 다음 알림으로 넘기지 않는다
-        if !s.hold && s.cur.as_ref().is_some_and(|(_, until)| t >= *until) {
+        if s.cur.as_ref().is_some_and(|(_, until)| t >= *until) {
             s.cur = s.queue.pop_front().map(|l| {
                 let until = t + l.ms as f64 / 1000.0;
                 (l, until)
             });
         }
         let mut rows = vec![];
-        if s.sea || s.off || s.hold {
-            // 바다·HUD 끄기·바다인지 모름: 아무것도 그리지 않는다 (rows 가 비면 창을 숨김)
+        if s.sea || s.off {
+            // 도시 밖·HUD 끄기: 아무것도 그리지 않는다 (rows 가 비면 창을 숨김)
         } else {
             if !s.status.is_empty() {
                 rows.push((s.status.clone(), false));

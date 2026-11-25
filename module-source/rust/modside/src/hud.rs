@@ -180,6 +180,21 @@ struct View {
 
 static VIEW: Mutex<Option<View>> = Mutex::new(None);
 
+// ---------- 1.0.6 HUD 위치 (2026-11-25 사용자: "hud 의 위치를 사용자가 스스로 바꿀 수 있게") ----------
+// 패널에서 게임 화면 모형 위를 끌어 정한다 (storage ui.hudPos). (x, y) = 게임 화면 안 비율 0~1:
+// x = HUD 가운데, y = HUD 위쪽. None = 기본 자리 (위쪽 가운데)
+static POS: Mutex<Option<(f64, f64)>> = Mutex::new(None);
+/// 패널에서 옮기는 동안 게임 창이 맨 앞이 아니어도 미리보기를 이 시각까지 띄운다
+static PREVIEW_UNTIL: Mutex<f64> = Mutex::new(0.0);
+const PREVIEW_SEC: f64 = 3.0;
+
+pub fn set_pos(pos: Option<(f64, f64)>, preview: bool) {
+    *POS.lock().unwrap() = pos.map(|(x, y)| (x.clamp(0.0, 1.0), y.clamp(0.0, 1.0)));
+    if preview {
+        *PREVIEW_UNTIL.lock().unwrap() = now() + PREVIEW_SEC;
+    }
+}
+
 fn rgb(c: u32) -> COLORREF {
     COLORREF(((c & 0xff) << 16) | (c & 0xff00) | ((c >> 16) & 0xff))
 }
@@ -530,7 +545,10 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
             });
         }
         let mut rows = vec![];
-        if s.sea || s.off {
+        if t < *PREVIEW_UNTIL.lock().unwrap() {
+            // 1.0.6: 위치 미리보기 (바다·HUD 끄기여도 잠깐 보인다)
+            rows.push((vec![p("HUD 위치 · 패널에서 옮기는 중", FG)], true));
+        } else if s.sea || s.off {
             // 도시 밖·HUD 끄기: 아무것도 그리지 않는다 (rows 가 비면 창을 숨김)
         } else {
             if !s.status.is_empty() {
@@ -543,7 +561,7 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         (s.game, s.force, rows)
     };
     let visible = game.is_some_and(|g| {
-        capture::is_window(g) && !capture::is_minimized(g) && (force || capture::foreground() == g) && !rows.is_empty()
+        capture::is_window(g) && !capture::is_minimized(g) && (force || capture::foreground() == g || t < *PREVIEW_UNTIL.lock().unwrap()) && !rows.is_empty()
     });
     let Some(g) = game.filter(|_| visible) else {
         if shown.take().is_some() {
@@ -555,7 +573,7 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
     };
     let dpi = unsafe { GetDpiForWindow(capture::hwnd(g)) }.max(96);
     let view = View { rows, dpi };
-    let (l, top, r, _) = capture::client_rect_screen(g);
+    let (l, top, r, bottom) = capture::client_rect_screen(g);
     let fonts = Fonts::new(dpi);
     let (w, h) = unsafe {
         let dc = GetDC(wnd);
@@ -566,7 +584,15 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         (w, h)
     };
     let off = (TOP as f64 * dpi as f64 / 96.0).round() as i32;
-    let rect = (l + (r - l - w) / 2, top + off, w, h);
+    let rect = match *POS.lock().unwrap() {
+        // 1.0.6: 사용자가 정한 자리. 게임 화면 밖으로 나가지 않게
+        Some((fx, fy)) => {
+            let x = l + ((r - l) as f64 * fx).round() as i32 - w / 2;
+            let y = top + ((bottom - top) as f64 * fy).round() as i32;
+            (x.clamp(l, (r - w).max(l)), y.clamp(top, (bottom - h).max(top)), w, h)
+        }
+        None => (l + (r - l - w) / 2, top + off, w, h),
+    };
     if shown.as_ref().is_some_and(|(v, rc)| *v == view && *rc == rect) {
         // 같은 내용이어도 맨 위는 지킨다 (게임 창을 눌렀을 때 밑으로 가지 않게)
         unsafe {

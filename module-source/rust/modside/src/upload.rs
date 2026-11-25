@@ -224,7 +224,10 @@ impl Uploader {
             let mut log = Map::new();
             let same = self.last_log.get(&k).is_some_and(|(v, at)| *v == rec && t - at <= LOG_SAME_SEC);
             if !same {
+                // 등록 기록(log) 규칙에는 tr·col 칸이 없다 → 넣으면 그 기록이 통째로 막힌다 (1.0.7, side-log '규칙에 막혀 건너뜀: log/…')
                 let mut l = rec.clone();
+                l.remove("tr");
+                l.remove("col");
                 l.insert("at".into(), json!(t));
                 l.insert("by".into(), json!(by));
                 l.insert("city".into(), json!(n.city));

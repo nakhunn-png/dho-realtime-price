@@ -363,6 +363,12 @@ impl Reader {
         if new.is_empty() {
             return;
         }
+        // 1.0.7 (2026-11-25 사용자 "업로드가 안 됨"): 도시를 아직 못 읽었으면 보낸 것으로 치지 않는다.
+        // 전에는 '도시를 모름'으로 버리고 sent 에 넣어서, 몇 초 뒤 도시를 읽어도 10분 동안 다시 안 올렸다 (교역소에 들어가자마자 매각 창을 열 때)
+        if self.city.is_none() {
+            self.note("도시를 인식중입니다 · 인식되면 시세를 올립니다".into(), out);
+            return;
+        }
         self.sent.extend(new.iter().cloned());
         out.push(Event::Trade { kind: tr.kind.clone(), city: self.city.clone(), rows: new });
     }

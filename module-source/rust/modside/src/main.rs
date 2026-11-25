@@ -47,6 +47,11 @@ static HUD: OnceLock<Hud> = OnceLock::new();
 /// 1.0.4: 남만 그래프 틱 HUD 는 켜 두어도 보인다
 static HUD_OFF: AtomicBool = AtomicBool::new(false);
 
+/// 1.0.6: HUD 위치 {x, y} (0~1). 숫자가 아니면 기본 자리
+fn pos_of(v: &Value) -> Option<(f64, f64)> {
+    Some((v["x"].as_f64()?, v["y"].as_f64()?)).filter(|(x, y)| x.is_finite() && y.is_finite())
+}
+
 fn set_hud_off(v: &Value) {
     let off = v.as_bool().unwrap_or(false);
     if HUD_OFF.swap(off, Ordering::Relaxed) != off {
@@ -1043,6 +1048,7 @@ fn main() {
     log(&format!("[시작] 시세 sidecar {} · Navigator {}", env!("CARGO_PKG_VERSION"), hello["navigatorVersion"].as_str().unwrap_or("?")));
     set_name(&hello["input"]["character"]);
     set_hud_off(&hello["input"]["hudOff"]);
+    hud::set_pos(pos_of(&hello["input"]["hudPos"]), false);
     write_line(&json!({ "t": "ready" }));
     emit(None, json!({ "kind": "ready", "version": env!("CARGO_PKG_VERSION") }));
 
@@ -1071,6 +1077,8 @@ fn main() {
                     set_name(&line["data"]["character"]);
                 } else if line["data"]["kind"] == "hud" {
                     set_hud_off(&line["data"]["off"]);
+                } else if line["data"]["kind"] == "hudpos" {
+                    hud::set_pos(pos_of(&line["data"]), true);
                 } else if line["data"]["kind"] == "open-site" {
                     open_site(line["data"]["page"] == "install");
                 }

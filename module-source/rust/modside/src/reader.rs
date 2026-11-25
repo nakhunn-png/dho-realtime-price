@@ -105,6 +105,12 @@ pub struct Reader {
     sent_near: Vec<NearItem>,
     t_resend: f64,
     noted: Option<String>,
+    /// 바다 지명을 본 뒤 지명을 연속으로 못 읽은 횟수 (1.0.1, 감지기 '도시를 인식중입니다'와 같음)
+    /// 바다 지명을 읽음 = 도시 밖 (1.0.2: 이때는 게임 화면 HUD 를 숨긴다)
+    pub sea: bool,
+    /// 1.0.4: 다시 붙은 뒤 지명을 한 번이라도 읽었나 (도시든 바다든). 읽기 전에는 sea 가 false 라도 믿지 않는다
+    pub place_known: bool,
+    city_miss: u32,
     // ---- 교역소 대사 (0.10.0) ----
     /// 서버를 알 때만 읽는다 (main 이 정함, 감지기와 같음)
     pub news_on: bool,
@@ -140,6 +146,9 @@ impl Reader {
             sent_near: vec![],
             t_resend: 0.0,
             noted: None,
+            sea: false,
+            place_known: false,
+            city_miss: 0,
             news_on: false,
             t_news: 0.0,
             news: HashMap::new(),
@@ -156,6 +165,8 @@ impl Reader {
     /// 대상 창이 바뀌면 읽던 것을 버린다 (도시도 다시 읽는다)
     pub fn reset(&mut self) {
         self.city = None;
+        self.sea = false;
+        self.place_known = false;
         self.t_city = 0.0;
         self.prev = None;
         self.sent.clear();
@@ -301,8 +312,20 @@ impl Reader {
         let now = match name {
             Some(n) if conf >= 0.6 && !n.is_empty() => Some(n),
             Some(_) => None, // 목록에 없는 지명(바다 등) = 도시 밖. 목록 밖 도시 인정은 아직 안 함
-            None => return,  // 못 읽음: 그대로 둔다
+            None => {
+                // 못 읽음: 그대로 둔다. 바다에 있다가 두 번 연속 못 읽으면 알린다 (감지기와 같음)
+                if self.city.is_none() && self.sea {
+                    self.city_miss += 1;
+                    if self.city_miss == 2 {
+                        out.push(Event::Note("도시를 인식중입니다".into()));
+                    }
+                }
+                return;
+            }
         };
+        self.city_miss = 0;
+        self.place_known = true;
+        self.sea = now.is_none();
         if now != self.city {
             self.city = now.clone();
             out.push(Event::City(now));

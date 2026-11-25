@@ -13,6 +13,7 @@ use serde_json::{Map, Value, json};
 use std::ffi::c_void;
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender, channel};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -167,6 +168,9 @@ struct Auth {
     refresh: Option<String>,
 }
 
+/// 올리기가 실패로 바뀐 횟수 (감지기 3.46: 늘 때마다 HUD '잠시 뒤 다시 보냅니다'. 모듈은 로그 글자로 따로 띄움)
+pub static FAILS: AtomicU32 = AtomicU32::new(0);
+
 pub struct Cloud {
     key: String,
     db: String,
@@ -309,6 +313,7 @@ impl Cloud {
                 Err(e) => {
                     if ok != Some(false) {
                         println!("[클라우드] 올리기 실패 (나중에 다시 시도): {e}");
+                        FAILS.fetch_add(1, Ordering::Relaxed);
                     }
                     ok = Some(false);
                     if e.code == 401 {

@@ -39,6 +39,17 @@ mod collector {
 
 static HUD: OnceLock<Hud> = OnceLock::new();
 
+/// 모듈 설정 '게임 화면 알림 끄기' (1.0.1) = 패널 'HUD 끄기' (1.0.4). 켜면 위 줄·알림을 숨긴다 (읽기·올리기는 그대로).
+/// 1.0.4: 남만 그래프 틱 HUD 는 켜 두어도 보인다
+static HUD_OFF: AtomicBool = AtomicBool::new(false);
+
+fn set_hud_off(v: &Value) {
+    let off = v.as_bool().unwrap_or(false);
+    if HUD_OFF.swap(off, Ordering::Relaxed) != off {
+        log(if off { "[HUD] HUD 끔 (남만 틱은 보임)" } else { "[HUD] HUD 켬" });
+    }
+}
+
 /// 모듈 설정 '캐릭터 이름' (0.5.1). 비어 있으면 화면에서 읽은 이름을 쓴다
 static SET_NAME: Mutex<String> = Mutex::new(String::new());
 
@@ -59,6 +70,9 @@ fn set_name(v: &Value) {
 /// 데이터 폴더의 캐릭터 이름 파일 (0.5.2). Navigator 2.2.1-beta.1 모듈 카드에 설정 칸이 안 보여서 둔 예비 길.
 /// 모듈 카드 '폴더 열기'로 열어 메모장으로 적는다. '#' 으로 시작하는 줄과 빈 줄은 건너뛴다
 const NAME_FILE: &str = "캐릭터이름.txt";
+
+/// 1.0.4: 게임 창에 다시 붙은 뒤 바다인지 모르는 동안 HUD 를 보류하는 최대 시간
+const HOLD_SEC: f64 = 5.0;
 
 fn name_file_init(data: &Option<PathBuf>) {
     let Some(d) = data else { return };
@@ -487,6 +501,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     let (mut ask, mut asked_missing, mut asked_mismatch): (Option<ask::Handle>, bool, bool) = (None, false, false);
     // 입력 창에서 '나중에'를 눌렀으면 이번 실행 동안 다시 묻지 않는다 (캐릭터를 바꿔도)
     let mut said_later = false;
+    // 1.0.4: 게임 창(pid)마다 HUD 로 알린 캐릭터 이름. 다시 붙어도(해역 이동·창 바꾸기) 지우지 않는다 → 같은 이름이면 다시 안 알림
+    let mut announced: std::collections::HashMap<u32, String> = std::collections::HashMap::new();
+    let mut t_conn = 0.0;
     let mut t_game0 = 0.0;
     // 화면 이름 칸에서 마지막으로 읽힌 글자 (입력 창에 미리 채운다)
     let mut seen_name: Option<String> = None;
@@ -516,7 +533,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         }
         let want = if paused == Some(true) { None } else { target.lock().unwrap().clone() };
         // HUD 는 감지기 exe 가 켜져 있으면 숨는다 (감지기 HUD 와 같은 자리라 겹치지 않게)
+        // 1.0.4: 'HUD 끄기'는 위 줄·알림만 숨긴다 (남만 틱 HUD 는 보이게 게임 창은 그대로 준다)
         hud.set_game(want.as_ref().map(|w| w.hwnd));
+        hud.set_off(HUD_OFF.load(Ordering::Relaxed));
         // 대상 창이 바뀜: 복사를 새로 시작하고 읽던 것을 버린다 (같은 창의 크기·활성 변화는 그대로)
         let same = match (&cur, &want) {
             (Some(a), Some(b)) => a.hwnd == b.hwnd && a.pid == b.pid && a.generation == b.generation,
@@ -534,6 +553,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             (chr, t_chr) = (None, 0.0);
             (verified, miss, matched) = (None, 0, None);
             (t_game0, seen_name) = (now(), None);
+            // 1.0.4: 바다인지 읽을 때까지(최대 HOLD_SEC) 위 줄·알림을 그리지 않는다
+            t_conn = now();
+            hud.set_hold(true);
             hud.set_status(status_parts(&None, false, &None));
             match &want {
                 Some(w) => {
@@ -546,6 +568,7 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         }
         let (Some(tg), Some(c)) = (&cur, &cap) else { continue };
         let role = Some((tg.role.as_str(), tg.generation));
+        let before = net.server.clone();
         if let Some(srv) = net.update(tg.pid, t) {
             // 접속이 바뀌면(캐릭터 바꾸기·서버 이동) 이름 확인을 처음부터 (0.6.3, 2026-11-22: 에이레네 티아마트 → 헬레네 캐릭터로 바꾼 뒤
             // 첫 시세가 이름 칸을 다시 보기 전에 '티아마트'로 올라갔음). 다시 맞춰 볼 때까지 등록자는 '미확인'
@@ -560,7 +583,12 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             emit(role, d.clone());
             checked = true;
             hud.set_status(status_parts(&net.server, checked, &city));
-            hud_say(&hud, &d);
+            // 1.0.1: 알던 서버에서 접속이 끊기거나 바뀜 = 캐릭터를 바꿈 (감지기 '캐릭터가 바뀜 · 서버 확인 중'과 같은 뜻)
+            if before.is_some() && srv.is_none() {
+                hud.say("server", vec![p("캐릭터가 바뀜. 서버 재인식", hud::FG)], 3000);
+            } else {
+                hud_say(&hud, &d);
+            }
         }
         let Some(frame) = c.latest() else { continue };
         if frame.at == seen_at || t - frame.at > 5.0 {
@@ -573,6 +601,10 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             log(&l);
         }
         hud.set_tick(rd.tick);
+        // 1.0.2: 바다에서는 게임 화면 HUD 를 숨긴다 (도착하면 City 이벤트보다 먼저 풀려 '도착' 알림은 보인다)
+        hud.set_sea(rd.sea);
+        // 1.0.4: 지명을 한 번 읽었거나(바다면 위에서 알림을 지움) 오래 못 읽으면 보류를 푼다
+        hud.set_hold(!rd.place_known && t - t_conn < HOLD_SEC);
         // 복사 간격: 남만 창 0.015초, 교역 창이 보이면 0.1초, 닫힌 지 1.5초가 지나면 2.5초
         if rd.nb_corner.is_some() {
             c.set_interval(NB_MS);
@@ -631,7 +663,10 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                     Some(n) if sure && declared.contains(n) => {
                         if verified != Some(true) || matched.as_ref() != Some(n) {
                             log(&format!("[등록자] {n} · 화면 이름과 맞음"));
-                            hud.say("name", vec![p(format!("{n} 캐릭터 확인 · 이 이름으로 올립니다"), hud::FG)], 3000);
+                            if announced.get(&tg.pid) != Some(n) {
+                                announced.insert(tg.pid, n.clone());
+                                hud.say("name", vec![p(format!("{n} 캐릭터 확인 · 이 이름으로 올립니다"), hud::FG)], 3000);
+                            }
                         }
                         (verified, miss, matched) = (Some(true), 0, Some(n.clone()));
                     }
@@ -655,6 +690,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 if let Some(n) = n {
                     if chr.as_ref() != Some(&n) {
                         log(&format!("[캐릭터] {n}"));
+                        if chr.is_some() {
+                            hud.say("name", vec![p("캐릭터가 바뀜. 서버 재인식", hud::FG)], 3000);
+                        }
                         chr = Some(n);
                     }
                 }
@@ -898,6 +936,7 @@ fn main() {
     }
     log(&format!("[시작] 시세 sidecar {} · Navigator {}", env!("CARGO_PKG_VERSION"), hello["navigatorVersion"].as_str().unwrap_or("?")));
     set_name(&hello["input"]["character"]);
+    set_hud_off(&hello["input"]["hudOff"]);
     write_line(&json!({ "t": "ready" }));
     emit(None, json!({ "kind": "ready", "version": env!("CARGO_PKG_VERSION") }));
 
@@ -924,6 +963,8 @@ fn main() {
             Some("message") => {
                 if line["data"]["kind"] == "character" {
                     set_name(&line["data"]["character"]);
+                } else if line["data"]["kind"] == "hud" {
+                    set_hud_off(&line["data"]["off"]);
                 } else if line["data"]["kind"] == "open-site" {
                     open_site(line["data"]["page"] == "install");
                 }

@@ -161,7 +161,7 @@ dependencies = [
 
 [[package]]
 name = "modside"
-version = "0.14.0"
+version = "0.14.4"
 dependencies = [
  "capture",
  "image",

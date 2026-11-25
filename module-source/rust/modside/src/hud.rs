@@ -74,6 +74,13 @@ struct State {
     queue: VecDeque<Line>,
     /// 남만 틱 HUD (0.10.0): (캡처 x, 캡처 y = 마지막 점 높이, 틱, 마지막으로 읽은 시각)
     tick: Option<(i64, i64, u8, f64)>,
+    /// 1.0.2: 바다에 있음 — 위 줄·알림 모두 숨기고, 그동안 온 알림은 버린다 (항해 중 HUD 가 거슬린다는 말이 많음)
+    sea: bool,
+    /// 1.0.4: 패널 'HUD 끄기' — 위 줄·알림만 숨긴다. 남만 틱 HUD 는 그대로 보인다
+    off: bool,
+    /// 1.0.4: 게임 창에 다시 붙은 뒤 바다인지 아직 모름 — 알림은 쌓아 두고 그리지 않는다
+    /// (해역을 넘을 때 Navigator 가 대상을 다시 줘서, 그 틈에 바다에서 알림이 새던 것)
+    hold: bool,
 }
 
 // ---------- 남만 틱 HUD (0.10.0, 감지기 ui.rs `tick_hud` 와 같은 모양·자리) ----------
@@ -116,8 +123,36 @@ impl Hud {
         self.0.lock().unwrap().tick = tick.map(|(x, y, v)| (x, y, v, now()));
     }
 
+    /// 바다로 나가면 떠 있던 알림까지 지운다
+    pub fn set_sea(&self, sea: bool) {
+        let mut s = self.0.lock().unwrap();
+        if sea && !s.sea {
+            s.cur = None;
+            s.queue.clear();
+        }
+        s.sea = sea;
+    }
+
+    /// 1.0.4: 'HUD 끄기'. 켜는 순간 떠 있던 알림도 지운다
+    pub fn set_off(&self, off: bool) {
+        let mut s = self.0.lock().unwrap();
+        if off && !s.off {
+            s.cur = None;
+            s.queue.clear();
+        }
+        s.off = off;
+    }
+
+    /// 1.0.4: 바다인지 알 때까지 위 줄·알림을 그리지 않는다
+    pub fn set_hold(&self, hold: bool) {
+        self.0.lock().unwrap().hold = hold;
+    }
+
     pub fn say(&self, key: &'static str, parts: Vec<Part>, ms: u64) {
         let mut s = self.0.lock().unwrap();
+        if s.sea || s.off {
+            return;
+        }
         let line = Line { key, parts, ms };
         let t = now();
         if let Some((c, _)) = &s.cur {
@@ -495,18 +530,23 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
     let t = now();
     let (game, force, rows) = {
         let mut s = st.lock().unwrap();
-        if s.cur.as_ref().is_some_and(|(_, until)| t >= *until) {
+        // 보류 중에는 다음 알림으로 넘기지 않는다
+        if !s.hold && s.cur.as_ref().is_some_and(|(_, until)| t >= *until) {
             s.cur = s.queue.pop_front().map(|l| {
                 let until = t + l.ms as f64 / 1000.0;
                 (l, until)
             });
         }
         let mut rows = vec![];
-        if !s.status.is_empty() {
-            rows.push((s.status.clone(), false));
-        }
-        if let Some((l, _)) = &s.cur {
-            rows.push((l.parts.clone(), true));
+        if s.sea || s.off || s.hold {
+            // 바다·HUD 끄기·바다인지 모름: 아무것도 그리지 않는다 (rows 가 비면 창을 숨김)
+        } else {
+            if !s.status.is_empty() {
+                rows.push((s.status.clone(), false));
+            }
+            if let Some((l, _)) = &s.cur {
+                rows.push((l.parts.clone(), true));
+            }
         }
         (s.game, s.force, rows)
     };

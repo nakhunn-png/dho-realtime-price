@@ -678,18 +678,26 @@ impl Recognizer {
         }
         // 이름 모양(흰 글자 위치)을 통째로 맞춘다. 바탕의 밝은 점이 몇 개 섞여도 되도록 미끄러뜨려 비교
         let mp = m.to_gray().pad(2);
-        let mut scores: Ranked = vec![];
-        for (t, n) in self.chars.tpl.iter().zip(&self.chars.names) {
-            if let Some(t) = t {
-                let tb = t.gt(100.0).to_gray();
-                if tb.h <= mp.h && tb.w <= mp.w {
-                    scores.push((match_max(&mp, &tb) as f64, n.clone()));
+        if let Some(n) = self.char_by_font(&mp) {
+            return (Some(n), true);
+        }
+        // 2026-11-26: 글자 간격은 도시명을 읽어야 정해져서, 바다에서 켜면 기본 간격으로 비교해 적힌 이름이 '다름'으로 나왔다
+        // → 간격이 아직 안 정해졌으면 이름으로도 간격을 찾는다 (맞으면 그 PC 간격으로 고정, calibrate_spacing 과 같음)
+        if !self.spacing_fixed && !self.chars.names.is_empty() {
+            let cur = self.chars.extra;
+            for e in SPACINGS.into_iter().filter(|&e| e != cur) {
+                self.chars.set_extra(e);
+                if let Some(n) = self.char_by_font(&mp) {
+                    self.spacing_fixed = true;
+                    self.cities.set_extra(e);
+                    self.city_bin = None;
+                    self.goods.set_extra(e);
+                    self.tiers.set_extra(e);
+                    self.log.push(format!("[글자 간격] 이 PC는 글자 간격 +{e}px로 읽습니다 (캐릭터 이름으로 찾음)"));
+                    return (Some(n), true);
                 }
             }
-        }
-        sort_ranked(&mut scores);
-        if !scores.is_empty() && scores[0].0 >= 0.9 && (scores.len() < 2 || scores[0].0 - scores[1].0 >= 0.02) {
-            return (Some(scores[0].1.clone()), true);
+            self.chars.set_extra(cur);
         }
         let (w, h) = (m.w + 40, m.h + 36);
         let mut img = vec![255u8; w * h * 3];
@@ -712,6 +720,21 @@ impl Recognizer {
                 (None, false)
             }
         }
+    }
+
+    /// 이름 칸 마스크(pad 2)와 적힌 이름 글자 그림이 90% 넘게, 다음 후보보다 2% 넘게 맞으면 그 이름
+    fn char_by_font(&self, mp: &Gray) -> Option<String> {
+        let mut scores: Ranked = vec![];
+        for (t, n) in self.chars.tpl.iter().zip(&self.chars.names) {
+            if let Some(t) = t {
+                let tb = t.gt(100.0).to_gray();
+                if tb.h <= mp.h && tb.w <= mp.w {
+                    scores.push((match_max(mp, &tb) as f64, n.clone()));
+                }
+            }
+        }
+        sort_ranked(&mut scores);
+        (!scores.is_empty() && scores[0].0 >= 0.9 && (scores.len() < 2 || scores[0].0 - scores[1].0 >= 0.02)).then(|| scores[0].1.clone())
     }
 
     /// 머리 위 이름표에서 국기 왼쪽 위 하늘색 별을 본다. Some(true)=다른 서버, Some(false)=원래 서버, None=이름표를 못 찾음

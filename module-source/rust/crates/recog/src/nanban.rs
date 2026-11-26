@@ -363,7 +363,12 @@ impl NanbanReader {
 
     /// 점 11개 → 틱. 점마다 흰 화소(가장 어두운 색 칸 > 200)의 무게중심 높이를 잰다
     pub fn read_points(rgb: &Rgb, cx: i64, cy: i64) -> Option<[u8; POINTS]> {
-        let mut out = [0u8; POINTS];
+        Self::read_points_raw(rgb, cx, cy).map(|r| r.map(|t| t.round().clamp(0.0, 100.0) as u8))
+    }
+
+    /// 반올림 전 틱 (2026-11-26 사용자 "소수점 틱도 남겨줘": 교환비 연구용). 1px ≈ 0.62틱이라 믿을 만한 건 ±0.3틱 정도
+    pub fn read_points_raw(rgb: &Rgb, cx: i64, cy: i64) -> Option<[f32; POINTS]> {
+        let mut out = [0f32; POINTS];
         for (i, o) in out.iter_mut().enumerate() {
             let x = cx + DOT_X0 + DOT_STEP * i as i64;
             let (y0, y1) = (cy + Y100 - 6, cy + Y0 + 6);
@@ -395,7 +400,7 @@ impl NanbanReader {
             }
             let ym = y0 as f64 + sy / sw;
             let t = ((cy + Y0) as f64 - ym) / (Y0 - Y100) as f64 * 100.0;
-            *o = t.round().clamp(0.0, 100.0) as u8;
+            *o = t as f32;
         }
         Some(out)
     }

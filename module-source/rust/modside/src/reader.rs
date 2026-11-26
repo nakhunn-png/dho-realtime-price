@@ -25,6 +25,8 @@ use std::collections::HashMap;
 pub const NEWS_EVERY: f64 = 3.0;
 
 pub const CITY_EVERY: f64 = 1.5;
+/// 1.0.8: 지명 칸이 이만큼 연속 비면 (1.5초 간격 → 약 3초) 바다로 보고 HUD 를 숨긴다
+pub const BLANK_N: u32 = 2;
 pub const RESEND_SEC: f64 = 60.0;
 
 /// 시세 창 '인근 도시 시세' 한 줄 (가격 없이 %)
@@ -91,7 +93,8 @@ pub enum Event {
     News { city: String, texts: Vec<String> },
     /// 남만무역정보 창이 자리 잡은 화면 (같은 화면은 60초에 한 번). states = 목록 도시마다 상태('보통'은 '평상'),
     /// seen = 도시·분류를 새로 읽었다 (HUD '나가사키의 식료품 재고 인식')
-    Nanban { culture: String, city: Option<String>, kind: Option<String>, pts: Option<[u8; POINTS]>, states: Vec<(String, String)>, seen: bool },
+    /// raw: 반올림 전 틱 (side-log 에만 적음, 교환비 연구용)
+    Nanban { culture: String, city: Option<String>, kind: Option<String>, pts: Option<[u8; POINTS]>, raw: Option<[f32; POINTS]>, states: Vec<(String, String)>, seen: bool },
 }
 
 pub struct Reader {
@@ -109,6 +112,8 @@ pub struct Reader {
     /// 바다 지명을 읽음 = 도시 밖 (1.0.2: 이때는 게임 화면 HUD 를 숨긴다)
     pub sea: bool,
     city_miss: u32,
+    /// 1.0.8: 지명 칸이 비어 있는 횟수 (연속). 바다에서는 지명 칸이 비고 측량도 끌 수 있어, 앞 도시가 남아 HUD 가 뜨던 것을 막는다
+    blank: u32,
     // ---- 교역소 대사 (0.10.0) ----
     /// 서버를 알 때만 읽는다 (main 이 정함, 감지기와 같음)
     pub news_on: bool,
@@ -123,7 +128,8 @@ pub struct Reader {
     nb_last: Option<(NanbanScreen, f64)>,
     nb_seen: Option<(String, String)>,
     /// 틱 HUD: (캡처 x, 캡처 y = 마지막 점 높이, 틱). 남만 창이 자리 잡았을 때만 Some
-    pub tick: Option<(i64, i64, u8)>,
+    /// 1.0.10 (2026-11-27 사용자 "hud에 소숫점도"): 틱은 소수 (반올림 전 값, 못 읽으면 정수)
+    pub tick: Option<(i64, i64, f32)>,
 }
 
 impl Reader {
@@ -146,6 +152,7 @@ impl Reader {
             noted: None,
             sea: false,
             city_miss: 0,
+            blank: 0,
             news_on: false,
             t_news: 0.0,
             news: HashMap::new(),
@@ -163,6 +170,7 @@ impl Reader {
     pub fn reset(&mut self) {
         self.city = None;
         self.sea = false;
+        self.blank = 0;
         self.t_city = 0.0;
         self.prev = None;
         self.sent.clear();
@@ -196,7 +204,8 @@ impl Reader {
         if let Some((cx, cy)) = self.nb_corner {
             if let Some(scr) = self.nb.read_fast(rgb, cx, cy) {
                 self.t_trade = t;
-                self.nb_step(scr, (cx, cy), t, &mut out);
+                let raw = NanbanReader::read_points_raw(rgb, cx, cy);
+                self.nb_step(scr, raw, (cx, cy), t, &mut out);
                 return (true, out);
             }
             self.nb_reset();
@@ -223,7 +232,8 @@ impl Reader {
                 let (cx, cy) = tr.corner;
                 if let Some(scr) = self.nb.read(rgb, cx, cy) {
                     self.nb_corner = Some((cx, cy));
-                    self.nb_step(scr, (cx, cy), t, &mut out);
+                    let raw = NanbanReader::read_points_raw(rgb, cx, cy);
+                    self.nb_step(scr, raw, (cx, cy), t, &mut out);
                 }
             }
             Some(tr) => {
@@ -276,14 +286,17 @@ impl Reader {
     }
 
     /// 남만무역정보 창 (감지기 collector.rs `nanban_step` 의 읽기 부분). 올리기는 upload.rs
-    fn nb_step(&mut self, scr: NanbanScreen, corner: (i64, i64), t: f64, out: &mut Vec<Event>) {
+    fn nb_step(&mut self, scr: NanbanScreen, raw: Option<[f32; POINTS]>, corner: (i64, i64), t: f64, out: &mut Vec<Event>) {
         if !self.nb_track.settle(&scr, t) {
             // 도시·분류를 바꾸는 중 (오른쪽이 아직 앞 것일 수 있음): 앞 도시의 틱 HUD도 지운다
             self.tick = None;
             return;
         }
         // 틱 HUD: 창 오른쪽 바깥, 마지막 점(지금 값) 높이에 'N틱' (감지기와 같은 자리)
-        self.tick = scr.pts.map(|p| (corner.0 + WIN_W + 10, corner.1 + tick_y(p[POINTS - 1]), p[POINTS - 1]));
+        self.tick = scr.pts.map(|p| {
+            let v = raw.map_or(p[POINTS - 1] as f32, |r| r[POINTS - 1]);
+            (corner.0 + WIN_W + 10, corner.1 + tick_y(p[POINTS - 1]), v)
+        });
         if self.nb_last.as_ref().is_some_and(|(s, at)| *s == scr && t - at < RESEND_SEC) {
             return;
         }
@@ -300,11 +313,12 @@ impl Reader {
         if seen {
             self.nb_seen = key;
         }
-        out.push(Event::Nanban { culture: scr.culture, city: scr.city, kind: scr.kind, pts: scr.pts, states, seen });
+        out.push(Event::Nanban { culture: scr.culture, city: scr.city, kind: scr.kind, pts: scr.pts, raw, states, seen });
     }
 
     fn city_step(&mut self, rgb: &Rgb, off: (i64, i64), out: &mut Vec<Event>) {
         let (name, conf) = self.r.read_city(rgb, off);
+        self.blank = if name.is_none() { self.blank + 1 } else { 0 };
         let now = match name {
             Some(n) if conf >= 0.6 && !n.is_empty() => Some(n),
             Some(_) => None, // 목록에 없는 지명(바다 등) = 도시 밖. 목록 밖 도시 인정은 아직 안 함
@@ -325,6 +339,20 @@ impl Reader {
             self.city = now.clone();
             out.push(Event::City(now));
         }
+    }
+
+    /// 1.0.8: 게임 화면 HUD(위 줄·알림)를 숨길 때 = 도시를 모름, 또는 지명 칸이 BLANK_N 번 연속 비었음 (바다·화면 전환)
+    /// 도시는 그대로 둔다 (같은 도시 지명이 다시 보이면 '도착' 알림 없이 HUD 만 다시 보인다)
+    pub fn hud_hidden(&self) -> bool {
+        self.city.is_none() || self.blank >= BLANK_N
+    }
+
+    /// 1.0.8: 측량 좌표가 보임 = 바다. 바다 지명을 못 읽어도 앞 도시를 지운다
+    /// (2026-11-26 사카이에서 출항했는데 지명을 못 읽어 바다에서 '헬레네 · 사카이' HUD 가 계속 떴음)
+    pub fn at_sea(&mut self) -> Option<Event> {
+        self.sea = true;
+        self.city_miss = 0;
+        self.city.take().map(|_| Event::City(None))
     }
 
     fn note(&mut self, msg: String, out: &mut Vec<Event>) {

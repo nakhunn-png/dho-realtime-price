@@ -31,8 +31,10 @@ pub struct Uploader {
     news: HashMap<(String, String), Vec<Value>>,
 }
 
-/// 남만무역정보: 같은 값은 10분 안에 다시 올리지 않는다 (감지기와 같음)
-const NANBAN_RESEND_SEC: i64 = 600;
+/// 남만무역정보: 같은 값은 1분 안에 다시 올리지 않는다.
+/// 1.0.9 (2026-11-26 사용자 "인식이 떴는데 업로드가 안 됨"): 전에는 10분이라, 같은 그래프를 다시 보면 HUD 에 '재고 인식'은 뜨는데
+/// 웹의 'n분 전'은 그대로였다 → 1분 지나면 같은 값이라도 시각·등록자를 새로 올린다
+const NANBAN_RESEND_SEC: i64 = 60;
 /// 교역소 대사: 도시마다 최근 2건, 6시간 지나면 숨김 (감지기 store.rs 와 같음)
 const NEWS_KEEP: usize = 2;
 const NEWS_TTL: i64 = 6 * 3600;
@@ -113,7 +115,7 @@ impl Uploader {
         &mut self,
         server: &str,
         states: &[(String, String)],
-        cat: Option<(&str, &str, &[u8])>,
+        cat: Option<(&str, &str, &[f32])>,
         by: &str,
     ) -> Option<(String, Vec<(String, String)>, bool)> {
         let cl = self.cloud.clone()?;
@@ -136,9 +138,11 @@ impl Uploader {
         }
         let mut cat_sent = false;
         if let Some((c, k, p)) = cat {
-            let v = p.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+            // 1.0.10 (2026-11-27 사용자 "firebase에서도 소숫점 그대로"): 소수 한 자리로 올린다 (23.0 은 23 으로)
+            let p1: Vec<f64> = p.iter().map(|x| (*x as f64 * 10.0).round() / 10.0).collect();
+            let v = p1.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
             if fresh((target.clone(), c.to_string(), k.to_string()), v) {
-                up.insert(format!("servers/{}/nanban/{}/cats/{}", fkey(&target), fkey(c), fkey(k)), json!({ "pts": p, "at": t, "by": by }));
+                up.insert(format!("servers/{}/nanban/{}/cats/{}", fkey(&target), fkey(c), fkey(k)), json!({ "pts": p1, "at": t, "by": by }));
                 cat_sent = true;
             }
         }

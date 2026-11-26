@@ -73,7 +73,7 @@ struct State {
     cur: Option<(Line, f64)>,
     queue: VecDeque<Line>,
     /// 남만 틱 HUD (0.10.0): (캡처 x, 캡처 y = 마지막 점 높이, 틱, 마지막으로 읽은 시각)
-    tick: Option<(i64, i64, u8, f64)>,
+    tick: Option<(i64, i64, f32, f64)>,
     /// 1.0.2: 바다에 있음 — 위 줄·알림 모두 숨기고, 그동안 온 알림은 버린다 (항해 중 HUD 가 거슬린다는 말이 많음)
     /// 1.0.5: '도시를 읽은 상태가 아님'으로 넓힘 (바다에서 켜면 바다 지명을 못 읽어 sea 가 false 로 남던 것)
     sea: bool,
@@ -102,7 +102,7 @@ fn now() -> f64 {
 impl Hud {
     /// HUD 창을 따로 도는 스레드에서 만든다
     pub fn start(force: bool) -> Hud {
-        let h = Hud(Arc::new(Mutex::new(State { force, ..Default::default() })));
+        let h = Hud(Arc::new(Mutex::new(State { force, sea: true, ..Default::default() })));
         let st = h.0.clone();
         std::thread::spawn(move || run(st));
         h
@@ -117,7 +117,7 @@ impl Hud {
     }
 
     /// 남만 틱 HUD 자리 (캡처 좌표). 읽을 때마다 부른다 — 1초 넘게 안 부르면 사라진다
-    pub fn set_tick(&self, tick: Option<(i64, i64, u8)>) {
+    pub fn set_tick(&self, tick: Option<(i64, i64, f32)>) {
         self.0.lock().unwrap().tick = tick.map(|(x, y, v)| (x, y, v, now()));
     }
 
@@ -430,7 +430,8 @@ fn tick_window(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(String, (i
         }
         return;
     };
-    let num = v.to_string();
+    // 1.0.10: 소수 한 자리 (예: 10.8)
+    let num = format!("{v:.1}");
     let dpi = unsafe { GetDpiForWindow(capture::hwnd(g)) }.max(96);
     let (w, h) = unsafe {
         let dc = GetDC(wnd);

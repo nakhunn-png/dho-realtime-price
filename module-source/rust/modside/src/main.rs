@@ -47,6 +47,10 @@ static HUD: OnceLock<Hud> = OnceLock::new();
 /// 1.0.4: 남만 그래프 틱 HUD 는 켜 두어도 보인다
 static HUD_OFF: AtomicBool = AtomicBool::new(false);
 
+/// 1.0.8: 새 모듈 버전 (service update.js 가 storage ui.update 를 보고 보냄). Navigator 알림은 켤 때 한 번이라 놓치기 쉬워,
+/// 도시에서 게임 화면 HUD 가 보일 때 한 번 알린다
+static UPDATE_V: Mutex<Option<String>> = Mutex::new(None);
+
 /// 1.0.6: HUD 위치 {x, y} (0~1). 숫자가 아니면 기본 자리
 fn pos_of(v: &Value) -> Option<(f64, f64)> {
     Some((v["x"].as_f64()?, v["y"].as_f64()?)).filter(|(x, y)| x.is_finite() && y.is_finite())
@@ -406,7 +410,7 @@ fn event_json(ev: &Event, server: &Option<String>) -> Value {
         Event::City(c) => json!({ "kind": "city", "city": c }),
         Event::Note(m) => json!({ "kind": "note", "text": m }),
         Event::News { city, texts } => json!({ "kind": "news", "server": server, "city": city, "texts": texts, "ready": server.is_some() }),
-        Event::Nanban { culture, city, kind, pts, states, seen } => json!({
+        Event::Nanban { culture, city, kind, pts, states, seen, .. } => json!({
             "kind": "nanban", "server": server, "ready": server.is_some(), "culture": culture, "city": city, "cat": kind,
             "pts": pts, "states": states.iter().map(|(c, v)| json!([c, v])).collect::<Vec<_>>(), "seen": seen,
         }),
@@ -600,6 +604,7 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     });
     let _ = NAV_PORT.set(port);
     let mut navs: HashMap<isize, NavSt> = HashMap::new();
+    let mut update_told: Option<String> = None;
     while !stop.load(Ordering::SeqCst) && !GONE.load(Ordering::SeqCst) {
         std::thread::sleep(Duration::from_millis(20));
         let t = now();
@@ -626,7 +631,12 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             (None, None) => true,
             _ => false,
         };
-        if !same {
+        // 1.0.8: 해역 이동·창 바꾸기 때 Navigator 는 같은 창(같은 hwnd·pid)을 세대만 바꿔 다시 준다 (기록에 하루 수백 번).
+        // 그때마다 복사·도시·이름 확인을 처음부터 하면 잠깐 도시를 모르고 등록자가 '미확인'이 되므로, 같은 창이면 이어서 읽는다
+        let same_window = cap.is_some() && matches!((&cur, &want), (Some(a), Some(b)) if a.hwnd == b.hwnd && a.pid == b.pid);
+        if !same && same_window {
+            cur = want.clone();
+        } else if !same {
             if let Some(c) = cap.take() {
                 c.stop();
             }
@@ -677,7 +687,7 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         }
         seen_at = frame.at;
         rd.news_on = net.server.is_some();
-        let (open, events) = rd.frame(&frame.rgb, c.client_offset(), t);
+        let (open, mut events) = rd.frame(&frame.rgb, c.client_offset(), t);
         for l in rd.take_log() {
             log(&l);
         }
@@ -686,9 +696,26 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         // 1.0.5: 바다 지명을 읽었을 때가 아니라 '도시를 읽은 상태가 아닐 때' 숨긴다. 바다에서 모듈을 켜거나 게임 창에 다시 붙으면
         // 바다 지명을 못 읽는 동안 sea 가 false 로 남아 '헬레네' 같은 HUD 가 바다에서 떴다. 도시 HUD 는 도시를 읽은 뒤에만
         // (이 프레임에서 도시를 새로 읽었으면 rd.city 가 이미 채워져 있어 '도착' 알림은 보인다)
-        hud.set_sea(rd.city.is_none());
         // 1.0.5: 웹 지도 네비. 교역 창이 열려 있지 않으면 측량 좌표를 읽는다 (감지기와 같음)
         let coords = if open { None } else { recog::nav::read_coords(&frame.rgb, c.client_offset()) };
+        // 1.0.8: 측량 좌표는 바다에서만 보인다 → 지명을 못 읽어도 앞 도시를 지우고 HUD 를 숨긴다
+        if coords.is_some() {
+            if let Some(ev) = rd.at_sea() {
+                log("[도시] 측량 좌표가 보여 바다로 봅니다 · 앞 도시를 지웁니다");
+                events.push(ev);
+            }
+        }
+        hud.set_sea(rd.hud_hidden());
+        // 1.0.8: 새 버전 알림 (도시에서 HUD 가 보일 때, 버전마다 이 실행에서 한 번)
+        if !rd.hud_hidden() && !HUD_OFF.load(Ordering::Relaxed) {
+            let v = UPDATE_V.lock().unwrap().clone();
+            if v.is_some() && v != update_told {
+                update_told = v.clone();
+                let v = v.unwrap();
+                log(&format!("[업데이트] 새 버전 {v} 알림"));
+                hud.say("update", vec![p(format!("시세 모듈 새 버전 {v} · "), hud::FG), p("Navigator 패널 맨 위 '업데이트' 버튼으로 설치", MUTED)], 8000);
+            }
+        }
         let (hd, bw) = match coords {
             Some(_) => (recog::nav::read_heading(&frame.rgb, c.client_offset()), recog::nav::read_bow(&frame.rgb, c.client_offset())),
             None => (None, None),
@@ -863,18 +890,26 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 log(&format!("[소식] {srv} {nc}: {} · {}", texts.join(" / "), if n > 0 { format!("{n}건 올림") } else { "이미 올린 대사".into() }));
                 d["uploaded"] = json!(n);
             }
-            if let (Event::Nanban { culture, city: nc, kind, pts, states, .. }, Some(srv)) = (ev, &net.server) {
-                let cat = match (nc, kind, pts) {
-                    (Some(c), Some(k), Some(p)) => Some((c.as_str(), k.as_str(), &p[..])),
+            if let (Event::Nanban { culture, city: nc, kind, pts, raw, states, .. }, Some(srv)) = (ev, &net.server) {
+                // 반올림 전 틱 (교환비 연구용): "소수 11.3 10.9 …"
+                let raw_txt = raw.map(|r| format!(" · 소수 {}", r.iter().map(|x| format!("{x:.1}")).collect::<Vec<_>>().join(" "))).unwrap_or_default();
+                // 1.0.10: 공유 서버에는 소수 틱 (못 읽었으면 정수)
+                let vals: Option<Vec<f32>> = pts.map(|p| match raw {
+                    Some(r) => r.iter().map(|x| x.clamp(0.0, 100.0)).collect(),
+                    None => p.iter().map(|x| *x as f32).collect(),
+                });
+                let cat = match (nc, kind, &vals) {
+                    (Some(c), Some(k), Some(v)) => Some((c.as_str(), k.as_str(), &v[..])),
                     _ => None,
                 };
                 if let Some((to, sent, cat_sent)) = up.nanban(srv, states, cat, &by) {
                     let st_txt: Vec<String> = sent.iter().map(|(c, v)| format!("{c} {v}")).collect();
                     let st_txt = if st_txt.is_empty() { String::new() } else { format!(" · 상태 {}", st_txt.join(", ")) };
                     match (cat_sent, cat) {
-                        (true, Some((c, k, p))) => {
+                        (true, Some((c, k, _))) => {
+                            let p = pts.unwrap_or_default();
                             let pts: Vec<String> = p.iter().map(|x| x.to_string()).collect();
-                            log(&format!("[남만] {to} {culture} {c} {k} {}틱 · {}{st_txt} · 등록자 {by}", p[p.len() - 1], pts.join(" ")));
+                            log(&format!("[남만] {to} {culture} {c} {k} {}틱 · {}{raw_txt}{st_txt} · 등록자 {by}", p[p.len() - 1], pts.join(" ")));
                         }
                         _ => log(&format!("[남만] {to} {culture}{st_txt} · 등록자 {by}")),
                     }
@@ -970,7 +1005,7 @@ fn hud_test() {
     hud_say(&h, &json!({ "kind": "nanban", "ready": true, "seen": true, "city": "안평", "cat": "식료품" }));
     for i in 0..50 {
         let v: u8 = if i < 25 { 98 } else { 19 };
-        h.set_tick(Some((300 + recog::nanban::WIN_W + 10, 150 + recog::nanban::tick_y(v), v)));
+        h.set_tick(Some((300 + recog::nanban::WIN_W + 10, 150 + recog::nanban::tick_y(v), v as f32 + 0.3)));
         std::thread::sleep(Duration::from_millis(100));
     }
     std::thread::sleep(Duration::from_millis(2000));
@@ -1079,6 +1114,8 @@ fn main() {
                     set_hud_off(&line["data"]["off"]);
                 } else if line["data"]["kind"] == "hudpos" {
                     hud::set_pos(pos_of(&line["data"]), true);
+                } else if line["data"]["kind"] == "update" {
+                    *UPDATE_V.lock().unwrap() = line["data"]["v"].as_str().map(String::from);
                 } else if line["data"]["kind"] == "open-site" {
                     open_site(line["data"]["page"] == "install");
                 }

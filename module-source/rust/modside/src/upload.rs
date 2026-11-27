@@ -40,7 +40,9 @@ const NEWS_KEEP: usize = 2;
 const NEWS_TTL: i64 = 6 * 3600;
 
 fn now() -> i64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs() as i64)
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs() as i64)
 }
 
 /// 공유 서버 규칙: 1~20자, . $ # [ ] / 없음
@@ -51,9 +53,18 @@ pub fn by_ok(by: &str) -> bool {
 
 impl Uploader {
     pub fn new(data: Option<&PathBuf>) -> Self {
-        let auth = data.cloned().unwrap_or_else(std::env::temp_dir).join("fb_auth.json");
+        let auth = data
+            .cloned()
+            .unwrap_or_else(std::env::temp_dir)
+            .join("fb_auth.json");
         let cloud = config::read_config().map(|c| Cloud::start(&c.api_key, &c.database_url, auth));
-        Uploader { cloud, last_log: HashMap::new(), last_price: HashMap::new(), nb_sent: HashMap::new(), news: HashMap::new() }
+        Uploader {
+            cloud,
+            last_log: HashMap::new(),
+            last_price: HashMap::new(),
+            nb_sent: HashMap::new(),
+            news: HashMap::new(),
+        }
     }
 
     pub fn ready(&self) -> bool {
@@ -79,15 +90,24 @@ impl Uploader {
                 rec.insert("col".into(), json!(col));
             }
             if let Pct::Num(n) = &r.pct {
-                self.last_price.insert((target.clone(), city.to_string(), r.name.clone()), (*n, r.price, t));
+                self.last_price.insert(
+                    (target.clone(), city.to_string(), r.name.clone()),
+                    (*n, r.price, t),
+                );
             }
             let mut sell = rec.clone();
             sell.insert("at".into(), json!(t));
             sell.insert("by".into(), json!(by));
-            up.insert(format!("prices/{}/sell", fkey(&r.name)), Value::Object(sell));
+            up.insert(
+                format!("prices/{}/sell", fkey(&r.name)),
+                Value::Object(sell),
+            );
             // 관리자 화면의 등록 기록 (같은 값은 10분에 한 번)
             let k = (target.clone(), city.to_string(), r.name.clone());
-            let same = self.last_log.get(&k).is_some_and(|(v, at)| *v == rec && t - at <= LOG_SAME_SEC);
+            let same = self
+                .last_log
+                .get(&k)
+                .is_some_and(|(v, at)| *v == rec && t - at <= LOG_SAME_SEC);
             if !same {
                 let mut l = Map::new();
                 l.insert("at".into(), json!(t));
@@ -96,7 +116,10 @@ impl Uploader {
                 l.insert("good".into(), json!(r.name));
                 l.insert(key.into(), pv);
                 l.insert("price".into(), json!(r.price));
-                log.insert(format!("log/{}/{}", fkey(&target), log_key()), Value::Object(l));
+                log.insert(
+                    format!("log/{}/{}", fkey(&target), log_key()),
+                    Value::Object(l),
+                );
                 self.last_log.insert(k, (rec, t));
             }
         }
@@ -122,7 +145,10 @@ impl Uploader {
         let target = TEST_SERVER.unwrap_or(server).to_string();
         let t = now();
         let mut fresh = |k: (String, String, String), v: String| -> bool {
-            let ok = self.nb_sent.get(&k).is_none_or(|(old, at)| *old != v || t - at >= NANBAN_RESEND_SEC);
+            let ok = self
+                .nb_sent
+                .get(&k)
+                .is_none_or(|(old, at)| *old != v || t - at >= NANBAN_RESEND_SEC);
             if ok {
                 self.nb_sent.insert(k, (v, t));
             }
@@ -132,17 +158,35 @@ impl Uploader {
         let mut sent = vec![];
         for (c, v) in states {
             if fresh((target.clone(), c.clone(), "상태".into()), v.clone()) {
-                up.insert(format!("servers/{}/nanban/{}/state", fkey(&target), fkey(c)), json!({ "v": v, "at": t, "by": by }));
+                up.insert(
+                    format!("servers/{}/nanban/{}/state", fkey(&target), fkey(c)),
+                    json!({ "v": v, "at": t, "by": by }),
+                );
                 sent.push((c.clone(), v.clone()));
             }
         }
         let mut cat_sent = false;
         if let Some((c, k, p)) = cat {
             // 1.0.10 (2026-11-27 사용자 "firebase에서도 소숫점 그대로"): 소수 한 자리로 올린다 (23.0 은 23 으로)
-            let p1: Vec<f64> = p.iter().map(|x| (*x as f64 * 10.0).round() / 10.0).collect();
-            let v = p1.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+            let p1: Vec<f64> = p
+                .iter()
+                .map(|x| (*x as f64 * 10.0).round() / 10.0)
+                .collect();
+            let v = p1
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
             if fresh((target.clone(), c.to_string(), k.to_string()), v) {
-                up.insert(format!("servers/{}/nanban/{}/cats/{}", fkey(&target), fkey(c), fkey(k)), json!({ "pts": p1, "at": t, "by": by }));
+                up.insert(
+                    format!(
+                        "servers/{}/nanban/{}/cats/{}",
+                        fkey(&target),
+                        fkey(c),
+                        fkey(k)
+                    ),
+                    json!({ "pts": p1, "at": t, "by": by }),
+                );
                 cat_sent = true;
             }
         }
@@ -158,7 +202,9 @@ impl Uploader {
     /// 감지기는 자기 PC 에 목록을 들고 있지만 모듈은 처음 보는 도시면 공유 서버의 목록을 한 번 읽어 와서 합친다 (남이 올린 대사를 지우지 않게).
     /// 올린 대사 수
     pub fn news(&mut self, server: &str, city: &str, texts: &[String]) -> usize {
-        let Some(cl) = self.cloud.clone() else { return 0 };
+        let Some(cl) = self.cloud.clone() else {
+            return 0;
+        };
         if is_guild_city(city) {
             return 0;
         }
@@ -168,7 +214,11 @@ impl Uploader {
             let path = format!("servers/{}/cities/{}/news", fkey(&target), fkey(city));
             let old: Vec<Value> = match cl.get(&path) {
                 Ok(Value::Array(a)) => a.into_iter().filter(|v| v.is_object()).collect(),
-                Ok(Value::Object(o)) => o.into_iter().map(|x| x.1).filter(|v| v.is_object()).collect(),
+                Ok(Value::Object(o)) => o
+                    .into_iter()
+                    .map(|x| x.1)
+                    .filter(|v| v.is_object())
+                    .collect(),
                 _ => vec![],
             };
             self.news.insert(k.clone(), old);
@@ -224,9 +274,15 @@ impl Uploader {
             sell.insert("at".into(), json!(t));
             sell.insert("by".into(), json!(by));
             let mut up = Map::new();
-            up.insert(format!("prices/{}/sell", fkey(&n.good)), Value::Object(sell));
+            up.insert(
+                format!("prices/{}/sell", fkey(&n.good)),
+                Value::Object(sell),
+            );
             let mut log = Map::new();
-            let same = self.last_log.get(&k).is_some_and(|(v, at)| *v == rec && t - at <= LOG_SAME_SEC);
+            let same = self
+                .last_log
+                .get(&k)
+                .is_some_and(|(v, at)| *v == rec && t - at <= LOG_SAME_SEC);
             if !same {
                 // 등록 기록(log) 규칙에는 tr·col 칸이 없다 → 넣으면 그 기록이 통째로 막힌다 (1.0.7, side-log '규칙에 막혀 건너뜀: log/…')
                 let mut l = rec.clone();
@@ -236,7 +292,10 @@ impl Uploader {
                 l.insert("by".into(), json!(by));
                 l.insert("city".into(), json!(n.city));
                 l.insert("good".into(), json!(n.good));
-                log.insert(format!("log/{}/{}", fkey(&target), log_key()), Value::Object(l));
+                log.insert(
+                    format!("log/{}/{}", fkey(&target), log_key()),
+                    Value::Object(l),
+                );
                 self.last_log.insert(k, (rec, t));
             }
             cl.push(&target, &n.city, up, log);

@@ -2,7 +2,7 @@
 # 감지기(gamji)와 따로 빌드하려고 독립 workspace 로 둔다. 인식·캡처·주소 코드는 ../crates 를 그대로 쓴다.
 [package]
 name = "modside"
-version = "0.15.6"
+version = "0.16.1"
 edition = "2024"
 publish = false
 

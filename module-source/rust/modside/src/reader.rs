@@ -84,7 +84,11 @@ pub enum Event {
     /// 도시가 바뀜 (None = 도시 밖)
     City(Option<String>),
     /// 연속 2번 같게 읽힌 새 시세 (kind: "sell" | "market")
-    Trade { kind: String, city: Option<String>, rows: Vec<Row> },
+    Trade {
+        kind: String,
+        city: Option<String>,
+        rows: Vec<Row>,
+    },
     /// 연속 2번 같게 읽힌 새 인근 도시 시세 (시세 창에서 고른 품목 하나)
     Near { good: String, items: Vec<NearItem> },
     /// 알릴 만한 상황 (같은 글은 창을 다시 열 때까지 한 번만)
@@ -94,7 +98,15 @@ pub enum Event {
     /// 남만무역정보 창이 자리 잡은 화면 (같은 화면은 60초에 한 번). states = 목록 도시마다 상태('보통'은 '평상'),
     /// seen = 도시·분류를 새로 읽었다 (HUD '나가사키의 식료품 재고 인식')
     /// raw: 반올림 전 틱 (side-log 에만 적음, 교환비 연구용)
-    Nanban { culture: String, city: Option<String>, kind: Option<String>, pts: Option<[u8; POINTS]>, raw: Option<[f32; POINTS]>, states: Vec<(String, String)>, seen: bool },
+    Nanban {
+        culture: String,
+        city: Option<String>,
+        kind: Option<String>,
+        pts: Option<[u8; POINTS]>,
+        raw: Option<[f32; POINTS]>,
+        states: Vec<(String, String)>,
+        seen: bool,
+    },
 }
 
 pub struct Reader {
@@ -227,7 +239,10 @@ impl Reader {
                 }
             }
             // 무역 상인 '남만무역정보' 창 (교역 창과 같은 모서리 틀, 품목 줄이 없고 그래프 세로축이 보임)
-            Some(tr) if tr.rows.is_empty() && NanbanReader::looks_like(rgb, tr.corner.0, tr.corner.1) => {
+            Some(tr)
+                if tr.rows.is_empty()
+                    && NanbanReader::looks_like(rgb, tr.corner.0, tr.corner.1) =>
+            {
                 self.t_trade = t;
                 let (cx, cy) = tr.corner;
                 if let Some(scr) = self.nb.read(rgb, cx, cy) {
@@ -243,7 +258,10 @@ impl Reader {
             }
         }
         // 교역소 대사: 서버·도시를 알고 길드 개척도시가 아니면 3초마다
-        if self.news_on && t - self.t_news >= NEWS_EVERY && self.city.as_ref().is_some_and(|c| !is_guild_city(c)) {
+        if self.news_on
+            && t - self.t_news >= NEWS_EVERY
+            && self.city.as_ref().is_some_and(|c| !is_guild_city(c))
+        {
             self.t_news = t;
             self.news_step(rgb, off, &mut out);
         }
@@ -265,7 +283,10 @@ impl Reader {
                 uniq.push(s.clone());
             }
         }
-        let mut news: Vec<String> = uniq.into_iter().filter(|s| cnt[s] > old.get(s).copied().unwrap_or(0)).collect();
+        let mut news: Vec<String> = uniq
+            .into_iter()
+            .filter(|s| cnt[s] > old.get(s).copied().unwrap_or(0))
+            .collect();
         // 가장 최근에 나온 대사가 마지막 (지도에서 맨 위)
         news.sort_by_key(|s| seq.iter().rposition(|x| x == s).unwrap());
         // 같은 결과를 두 번 연속 읽었을 때만 횟수를 줄인다 (한 줄을 잠깐 놓쳤다가 다시 읽으면 새 대사로 착각하지 않게)
@@ -281,12 +302,22 @@ impl Reader {
         };
         self.news_seq = Some(seq);
         if let (false, Some(c)) = (news.is_empty(), self.city.clone()) {
-            out.push(Event::News { city: c, texts: news });
+            out.push(Event::News {
+                city: c,
+                texts: news,
+            });
         }
     }
 
     /// 남만무역정보 창 (감지기 collector.rs `nanban_step` 의 읽기 부분). 올리기는 upload.rs
-    fn nb_step(&mut self, scr: NanbanScreen, raw: Option<[f32; POINTS]>, corner: (i64, i64), t: f64, out: &mut Vec<Event>) {
+    fn nb_step(
+        &mut self,
+        scr: NanbanScreen,
+        raw: Option<[f32; POINTS]>,
+        corner: (i64, i64),
+        t: f64,
+        out: &mut Vec<Event>,
+    ) {
         if !self.nb_track.settle(&scr, t) {
             // 도시·분류를 바꾸는 중 (오른쪽이 아직 앞 것일 수 있음): 앞 도시의 틱 HUD도 지운다
             self.tick = None;
@@ -297,23 +328,50 @@ impl Reader {
             let v = raw.map_or(p[POINTS - 1] as f32, |r| r[POINTS - 1]);
             (corner.0 + WIN_W + 10, corner.1 + tick_y(p[POINTS - 1]), v)
         });
-        if self.nb_last.as_ref().is_some_and(|(s, at)| *s == scr && t - at < RESEND_SEC) {
+        if self
+            .nb_last
+            .as_ref()
+            .is_some_and(|(s, at)| *s == scr && t - at < RESEND_SEC)
+        {
             return;
         }
         self.nb_last = Some((scr.clone(), t));
         // 도시 상태: 모두 목록 아이콘 (고른 도시도). 고른 도시 아이콘을 모르면 '도시 상태' 글자로 배운다
         let mut states = vec![];
         for (c, s) in &scr.list {
-            let s = if s.is_none() && Some(c) == scr.city.as_ref() { scr.state.clone().filter(|v| self.nb.learn_selected(v)) } else { s.clone() };
+            let s = if s.is_none() && Some(c) == scr.city.as_ref() {
+                scr.state.clone().filter(|v| self.nb.learn_selected(v))
+            } else {
+                s.clone()
+            };
             let Some(s) = s else { continue };
-            states.push((c.clone(), if s == "보통" { "평상".to_string() } else { s }));
+            states.push((
+                c.clone(),
+                if s == "보통" {
+                    "평상".to_string()
+                } else {
+                    s
+                },
+            ));
         }
-        let key = scr.city.clone().zip(scr.kind.clone()).filter(|_| scr.pts.is_some());
+        let key = scr
+            .city
+            .clone()
+            .zip(scr.kind.clone())
+            .filter(|_| scr.pts.is_some());
         let seen = key.is_some() && key != self.nb_seen;
         if seen {
             self.nb_seen = key;
         }
-        out.push(Event::Nanban { culture: scr.culture, city: scr.city, kind: scr.kind, pts: scr.pts, raw, states, seen });
+        out.push(Event::Nanban {
+            culture: scr.culture,
+            city: scr.city,
+            kind: scr.kind,
+            pts: scr.pts,
+            raw,
+            states,
+            seen,
+        });
     }
 
     fn city_step(&mut self, rgb: &Rgb, off: (i64, i64), out: &mut Vec<Event>) {
@@ -383,11 +441,23 @@ impl Reader {
         if tr.rows.is_empty() {
             return;
         }
-        let rows: Vec<Row> =
-            tr.rows.iter().map(|r| Row { name: r.name.clone(), price: r.price, pct: r.pct.clone(), tr: mark(&r.arrow), arrow: r.arrow.clone() }).collect();
+        let rows: Vec<Row> = tr
+            .rows
+            .iter()
+            .map(|r| Row {
+                name: r.name.clone(),
+                price: r.price,
+                pct: r.pct.clone(),
+                tr: mark(&r.arrow),
+                arrow: r.arrow.clone(),
+            })
+            .collect();
         let prev = self.prev.replace(rows.clone()).unwrap_or_default();
         let stable: Vec<Row> = rows.into_iter().filter(|r| prev.contains(r)).collect(); // 연속 2번 같은 값만
-        let new: Vec<Row> = stable.into_iter().filter(|r| !self.sent.contains(r)).collect();
+        let new: Vec<Row> = stable
+            .into_iter()
+            .filter(|r| !self.sent.contains(r))
+            .collect();
         if new.is_empty() {
             return;
         }
@@ -398,7 +468,11 @@ impl Reader {
             return;
         }
         self.sent.extend(new.iter().cloned());
-        out.push(Event::Trade { kind: tr.kind.clone(), city: self.city.clone(), rows: new });
+        out.push(Event::Trade {
+            kind: tr.kind.clone(),
+            city: self.city.clone(),
+            rows: new,
+        });
     }
 
     /// 시세 창 오른쪽 '인근 도시 시세' (감지기 collector.rs trade_step 의 near 부분과 같음)
@@ -411,10 +485,19 @@ impl Reader {
             .near
             .iter()
             .filter(|n| Some(&n.city) != self.city.as_ref() && !is_guild_city(&n.city))
-            .map(|n| NearItem { city: n.city.clone(), good: good.clone(), pct: n.pct, tr: mark(&n.arrow), arrow: n.arrow.clone() })
+            .map(|n| NearItem {
+                city: n.city.clone(),
+                good: good.clone(),
+                pct: n.pct,
+                tr: mark(&n.arrow),
+                arrow: n.arrow.clone(),
+            })
             .collect();
         let prev = self.prev_near.replace(items.clone()).unwrap_or_default();
-        let new: Vec<NearItem> = items.into_iter().filter(|r| prev.contains(r) && !self.sent_near.contains(r)).collect();
+        let new: Vec<NearItem> = items
+            .into_iter()
+            .filter(|r| prev.contains(r) && !self.sent_near.contains(r))
+            .collect();
         if new.is_empty() {
             return;
         }

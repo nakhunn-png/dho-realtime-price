@@ -722,7 +722,28 @@ impl Recognizer {
         }
     }
 
-    /// 이름 칸 마스크(pad 2)와 적힌 이름 글자 그림이 90% 넘게, 다음 후보보다 2% 넘게 맞으면 그 이름
+    /// 2026-11-28: 0.9 → 0.985. 화면 '라이거냥이'가 적힌 '타이거낭이'와 0.944 로 맞아 다른 캐릭터 시세가 그 이름으로 올라갔다.
+    /// 진짜 이름은 1.000 (examples/namescore.rs 로 잰 값), 한 획 다른 '타이거냥이'↔'타이거낭이'도 0.980
+    pub const NAME_SURE: f64 = 0.985;
+
+    /// 점검용: 이름 칸과 적힌 이름 글자 그림의 맞춤 점수 (높은 순)
+    pub fn character_scores(&self, rgb: &Rgb, client_off: (i64, i64)) -> Vec<(f64, String)> {
+        let crop = sub(rgb, client_off.0, client_off.1, PARTY_NAME_BOX);
+        let mp = crop.min_channel().gt(190.0).to_gray().pad(2);
+        let mut scores: Ranked = vec![];
+        for (t, n) in self.chars.tpl.iter().zip(&self.chars.names) {
+            if let Some(t) = t {
+                let tb = t.gt(100.0).to_gray();
+                if tb.h <= mp.h && tb.w <= mp.w {
+                    scores.push((match_max(&mp, &tb) as f64, n.clone()));
+                }
+            }
+        }
+        sort_ranked(&mut scores);
+        scores
+    }
+
+    /// 이름 칸 마스크(pad 2)와 적힌 이름 글자 그림이 98.5% 넘게, 다음 후보보다 2% 넘게 맞으면 그 이름
     fn char_by_font(&self, mp: &Gray) -> Option<String> {
         let mut scores: Ranked = vec![];
         for (t, n) in self.chars.tpl.iter().zip(&self.chars.names) {
@@ -734,7 +755,7 @@ impl Recognizer {
             }
         }
         sort_ranked(&mut scores);
-        (!scores.is_empty() && scores[0].0 >= 0.9 && (scores.len() < 2 || scores[0].0 - scores[1].0 >= 0.02)).then(|| scores[0].1.clone())
+        (!scores.is_empty() && scores[0].0 >= Self::NAME_SURE && (scores.len() < 2 || scores[0].0 - scores[1].0 >= 0.02)).then(|| scores[0].1.clone())
     }
 
     /// 머리 위 이름표에서 국기 왼쪽 위 하늘색 별을 본다. Some(true)=다른 서버, Some(false)=원래 서버, None=이름표를 못 찾음

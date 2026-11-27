@@ -10,7 +10,7 @@ use windows::Win32::UI::HiDpi::{
 };
 use windows::Win32::UI::Shell::IsUserAnAdmin;
 use windows::Win32::UI::WindowsAndMessaging::{
-    EnumWindows, GetClientRect, GetForegroundWindow, GetWindowRect, GetWindowTextW, IsIconic, IsWindow, IsWindowVisible,
+    EnumWindows, GetClientRect, GetForegroundWindow, GetWindowThreadProcessId, GetWindowRect, GetWindowTextW, IsIconic, IsWindow, IsWindowVisible,
     SetProcessDPIAware,
 };
 
@@ -118,6 +118,24 @@ pub fn is_minimized(h: Hwnd) -> bool {
 
 pub fn is_window(h: Hwnd) -> bool {
     unsafe { IsWindow(hwnd(h)).as_bool() }
+}
+
+/// 창을 만든 프로세스 번호 (모르면 0)
+pub fn window_pid(h: Hwnd) -> u32 {
+    let mut pid = 0u32;
+    unsafe {
+        GetWindowThreadProcessId(hwnd(h), Some(&mut pid));
+    }
+    pid
+}
+
+/// 창 안쪽 크기 (너비, 높이)
+pub fn client_size(h: Hwnd) -> (i64, i64) {
+    let mut r = RECT::default();
+    unsafe {
+        let _ = GetClientRect(hwnd(h), &mut r);
+    }
+    ((r.right - r.left) as i64, (r.bottom - r.top) as i64)
 }
 
 pub fn foreground() -> Hwnd {

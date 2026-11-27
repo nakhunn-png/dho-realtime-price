@@ -18,18 +18,18 @@ macro_rules! println {
     ($($t:tt)*) => { $crate::say_out(&format!($($t)*)) };
 }
 
-#[path = "../../crates/gamji/src/config.rs"]
-#[allow(dead_code)]
-mod config;
+mod ask;
 #[path = "../../crates/gamji/src/cloud.rs"]
 #[allow(dead_code)]
 mod cloud;
+#[path = "../../crates/gamji/src/config.rs"]
+#[allow(dead_code)]
+mod config;
+mod hud;
 /// 1.0.5: 웹 지도 네비 (감지기와 같은 /api/nav 서버)
 #[path = "../../crates/gamji/src/nav.rs"]
 #[allow(dead_code)]
 mod nav;
-mod ask;
-mod hud;
 mod nb;
 mod reader;
 mod upload;
@@ -59,7 +59,11 @@ fn pos_of(v: &Value) -> Option<(f64, f64)> {
 fn set_hud_off(v: &Value) {
     let off = v.as_bool().unwrap_or(false);
     if HUD_OFF.swap(off, Ordering::Relaxed) != off {
-        log(if off { "[HUD] HUD 끔 (남만 틱은 보임)" } else { "[HUD] HUD 켬" });
+        log(if off {
+            "[HUD] HUD 끔 (남만 틱은 보임)"
+        } else {
+            "[HUD] HUD 켬"
+        });
     }
 }
 
@@ -74,7 +78,9 @@ fn set_name(v: &Value) {
         log(&match (n.is_empty(), ok) {
             (true, _) => "[등록자] 설정 비어 있음 · 화면에서 읽은 캐릭터 이름을 씁니다".to_string(),
             (false, true) => format!("[등록자] 설정 이름 {n}"),
-            (false, false) => format!("[등록자] 설정 이름 '{n}'은 쓸 수 없는 글자가 있어 무시합니다"),
+            (false, false) => {
+                format!("[등록자] 설정 이름 '{n}'은 쓸 수 없는 글자가 있어 무시합니다")
+            }
         });
     }
     *g = if ok { n } else { String::new() };
@@ -83,7 +89,6 @@ fn set_name(v: &Value) {
 /// 데이터 폴더의 캐릭터 이름 파일 (0.5.2). Navigator 2.2.1-beta.1 모듈 카드에 설정 칸이 안 보여서 둔 예비 길.
 /// 모듈 카드 '폴더 열기'로 열어 메모장으로 적는다. '#' 으로 시작하는 줄과 빈 줄은 건너뛴다
 const NAME_FILE: &str = "캐릭터이름.txt";
-
 
 fn name_file_init(data: &Option<PathBuf>) {
     let Some(d) = data else { return };
@@ -99,11 +104,16 @@ fn name_file_init(data: &Option<PathBuf>) {
 /// 0.5.4~0.6.3 은 이름 하나만 두고 덮어써서 캐릭터를 바꿀 때마다 다시 물었다. 이제 캐릭터마다 한 줄씩 쌓아 두고,
 /// 화면 이름 칸이 그중 하나와 맞으면 그 이름으로 올린다
 fn name_file_add(data: &Option<PathBuf>, name: &str) -> bool {
-    let Some(d) = data else { return false };
     let mut names = name_file_read(data);
     if !names.iter().any(|n| n == name) {
         names.push(name.to_string());
     }
+    name_file_write(data, &names)
+}
+
+/// 이름 목록을 통째로 쓴다 (1.0.14: 패널 '캐릭터 이름 재지정'도 이것으로)
+fn name_file_write(data: &Option<PathBuf>, names: &[String]) -> bool {
+    let Some(d) = data else { return false };
     let txt = format!("# 캐릭터 이름을 한 줄에 하나씩 적습니다 (여러 캐릭터 가능). 시세를 올릴 때 등록자로 보입니다.
 # 게임 화면의 이름과 맞는 줄을 골라 씁니다. 20자까지, . $ # [ ] / 는 쓸 수 없습니다.
 {}
@@ -111,9 +121,37 @@ fn name_file_add(data: &Option<PathBuf>, name: &str) -> bool {
     std::fs::write(d.join(NAME_FILE), txt).is_ok()
 }
 
+/// 1.0.14 (2026-11-28 사용자 "캐릭터 이름 재지정 메뉴"): 패널에서 저장하면 worker 가 이름 확인을 처음부터 한다
+static NAMES_RECHECK: AtomicBool = AtomicBool::new(false);
+/// 지금 화면과 맞은 이름 (패널 목록에 '지금 캐릭터'로 표시)
+static NAMES_CUR: Mutex<Option<String>> = Mutex::new(None);
+
+/// 저장된 이름 목록과 지금 맞은 이름을 service 에 알린다 → storage ui.names → 패널
+fn emit_names(data: &Option<PathBuf>) {
+    let cur = NAMES_CUR.lock().unwrap().clone();
+    emit(None, json!({ "kind": "names", "names": name_file_read(data), "current": cur }));
+}
+
+/// 패널에서 고친 이름 목록 (규칙에 안 맞는 이름·같은 이름은 뺀다, 30개까지)
+fn names_from(v: &Value) -> Vec<String> {
+    let mut out: Vec<String> = vec![];
+    for n in v.as_array().into_iter().flatten().filter_map(|x| x.as_str()) {
+        let n = n.trim();
+        if !n.is_empty() && upload::by_ok(n) && !out.iter().any(|o| o == n) && out.len() < 30 {
+            out.push(n.to_string());
+        }
+    }
+    out
+}
+
 /// 파일의 이름들 ('#' 줄·빈 줄·규칙에 안 맞는 줄은 건너뜀, 같은 이름은 한 번)
 fn name_file_read(data: &Option<PathBuf>) -> Vec<String> {
-    let Some(txt) = data.as_ref().and_then(|d| std::fs::read_to_string(d.join(NAME_FILE)).ok()) else { return vec![] };
+    let Some(txt) = data
+        .as_ref()
+        .and_then(|d| std::fs::read_to_string(d.join(NAME_FILE)).ok())
+    else {
+        return vec![];
+    };
     let mut out: Vec<String> = vec![];
     for l in txt.trim_start_matches('\u{feff}').lines().map(str::trim) {
         if !l.is_empty() && !l.starts_with('#') && upload::by_ok(l) && !out.iter().any(|n| n == l) {
@@ -128,7 +166,11 @@ fn say_out(msg: &str) {
     log(msg);
     if msg.contains("올리기 실패") {
         if let Some(h) = HUD.get() {
-            h.say("upload", vec![p("공유 서버에 올리지 못함 · 잠시 뒤 다시 보냅니다", WARN)], 5000);
+            h.say(
+                "upload",
+                vec![p("공유 서버에 올리지 못함 · 잠시 뒤 다시 보냅니다", WARN)],
+                5000,
+            );
         }
     }
 }
@@ -176,7 +218,16 @@ struct NavSt {
 impl NavSt {
     /// 측량 좌표 하나 → 지도. 좌표를 읽고 있는 중이면 true
     #[allow(clippy::too_many_arguments)]
-    fn step(&mut self, hub: &nav::NavHub, h: isize, chr: &str, coords: Option<(u32, u32)>, t: f64, heading: Option<f64>, bow: Option<f64>) -> bool {
+    fn step(
+        &mut self,
+        hub: &nav::NavHub,
+        h: isize,
+        chr: &str,
+        coords: Option<(u32, u32)>,
+        t: f64,
+        heading: Option<f64>,
+        bow: Option<f64>,
+    ) -> bool {
         let raw0 = std::mem::replace(&mut self.hd_raw, heading);
         let mut heading = heading;
         if let Some(r0) = raw0 {
@@ -186,7 +237,10 @@ impl NavSt {
         }
         if let Some(c) = coords {
             if self.t_nav == 0.0 {
-                log(&format!("[네비] 측량 좌표를 읽기 시작함 {},{} · 웹 지도에 보냅니다", c.0, c.1));
+                log(&format!(
+                    "[네비] 측량 좌표를 읽기 시작함 {},{} · 웹 지도에 보냅니다",
+                    c.0, c.1
+                ));
             }
             self.t_nav = t;
             let moved = |a: Option<f64>, b: Option<f64>| match (a, b) {
@@ -216,7 +270,9 @@ const NET_EVERY: f64 = 2.0;
 const EXE_MUTEX: &str = "Local\\dho-price-collector-A";
 
 fn now() -> f64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0.0, |d| d.as_secs_f64())
 }
 
 // ---------- 기록 ----------
@@ -226,7 +282,10 @@ static LOG_PATH: OnceLock<Option<PathBuf>> = OnceLock::new();
 fn local_hms() -> String {
     use windows::Win32::System::SystemInformation::GetLocalTime;
     let t = unsafe { GetLocalTime() };
-    format!("{:02}-{:02} {:02}:{:02}:{:02}", t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond)
+    format!(
+        "{:02}-{:02} {:02}:{:02}:{:02}",
+        t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond
+    )
 }
 
 /// 데이터 폴더의 side-log.txt 에 한 줄 (2 MB 가 넘으면 side-log.old.txt 로 옮기고 새로 쓴다). 점검 명령은 표준 오류로
@@ -242,7 +301,9 @@ fn open_site(install: bool) {
     static LAST: Mutex<Option<std::time::Instant>> = Mutex::new(None);
     {
         let mut l = LAST.lock().unwrap();
-        if l.is_some_and(|t| t.elapsed() < Duration::from_secs(2)) { return; }
+        if l.is_some_and(|t| t.elapsed() < Duration::from_secs(2)) {
+            return;
+        }
         *l = Some(std::time::Instant::now());
     }
     // 1.0.5: 웹 지도가 이 PC 의 네비 포트를 기억하게 ?nav=포트 (웹 app.js NAV_PORT)
@@ -251,17 +312,36 @@ fn open_site(install: bool) {
         (false, Some(p)) => format!("{SITE_URL}?nav={p}"),
         (false, None) => SITE_URL.to_string(),
     };
-    let r = unsafe { ShellExecuteW(None, w!("open"), &HSTRING::from(url), None, None, SW_SHOWNORMAL) };
-    log(&format!("[웹사이트] 열기 {}", if r.0 as isize > 32 { "됨" } else { "실패" }));
+    let r = unsafe {
+        ShellExecuteW(
+            None,
+            w!("open"),
+            &HSTRING::from(url),
+            None,
+            None,
+            SW_SHOWNORMAL,
+        )
+    };
+    log(&format!(
+        "[웹사이트] 열기 {}",
+        if r.0 as isize > 32 { "됨" } else { "실패" }
+    ));
 }
 
 fn log(msg: &str) {
     match LOG_PATH.get().and_then(|p| p.as_ref()) {
         Some(p) => {
-            if std::fs::metadata(p).map(|m| m.len() > 2_000_000).unwrap_or(false) {
+            if std::fs::metadata(p)
+                .map(|m| m.len() > 2_000_000)
+                .unwrap_or(false)
+            {
                 let _ = std::fs::rename(p, p.with_file_name("side-log.old.txt"));
             }
-            if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(p) {
+            if let Ok(mut f) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(p)
+            {
                 let _ = writeln!(f, "{} {msg}", local_hms());
             }
         }
@@ -277,7 +357,8 @@ static GONE: AtomicBool = AtomicBool::new(false);
 fn write_line(v: &Value) {
     let _g = OUT.lock().unwrap();
     let mut o = io::stdout().lock();
-    let ok = serde_json::to_writer(&mut o, v).is_ok() && o.write_all(b"\n").is_ok() && o.flush().is_ok();
+    let ok =
+        serde_json::to_writer(&mut o, v).is_ok() && o.write_all(b"\n").is_ok() && o.flush().is_ok();
     if !ok {
         GONE.store(true, Ordering::SeqCst); // Host 가 세션을 끝냄
     }
@@ -286,9 +367,32 @@ fn write_line(v: &Value) {
 /// target: 화면에서 읽은 결과면 Some((역할, 세대)), 대상과 무관하면 None
 fn emit(target: Option<(&str, u64)>, data: Value) {
     log(&format!("알림 {data}"));
-    let t = target.map_or(Value::Null, |(role, g)| json!({ "role": role, "generation": g }));
+    let t = target.map_or(
+        Value::Null,
+        |(role, g)| json!({ "role": role, "generation": g }),
+    );
     write_line(&json!({ "t": "emit", "target": t, "data": data }));
 }
+
+/// 1.0.13(재) (2026-11-28 다른 PC: 직접 찾은 라이거냥이 창이 pid 0 → 서버를 못 정해 시세·남만이 안 올라감. 그 게임만 다른 권한으로 켜져
+/// 창에 직접 물으면 0 이 나옴): 감지기 exe 와 같이 게임 프로세스의 스레드 창 목록에서 찾고 (netaddr::window_pid),
+/// 그래도 0 이면 게임 프로세스 중 Navigator 가 알려 준 창(known)의 pid 를 뺀 것이 하나뿐일 때 그것
+fn own_pid(h: isize, known: &[Option<&Target>]) -> u32 {
+    let p = netaddr::window_pid(h);
+    if p != 0 {
+        return p;
+    }
+    let mut rest = netaddr::game_pids(Duration::from_secs(2));
+    for t in known.iter().flatten() {
+        rest.remove(&t.pid);
+    }
+    let p = if rest.len() == 1 { rest.into_iter().next().unwrap_or(0) } else { 0 };
+    log(&format!("[게임 창] 창 {h:#X} 의 pid 를 창에서 못 얻음 · {}", if p != 0 { format!("게임 프로세스 목록에서 {p}") } else { "후보가 하나가 아니라 모름".into() }));
+    p
+}
+
+/// 1.0.14: Navigator 목록에 없어 sidecar 가 직접 찾은 맨 앞 게임 창의 역할 이름
+const OWN: &str = "own";
 
 /// Navigator 가 알려 준 게임 창 중 활성인 것 (hud 우선)
 #[derive(Clone, Debug, PartialEq)]
@@ -305,20 +409,43 @@ struct Target {
 /// 1.0.12 (2026-11-27 사용자 "이전버전까지는 됐잖아?"): 게임 창이 하나도 활성이 아니면(브라우저로 웹 지도를 보는 중)
 /// 멈추지 않고 마지막으로 활성이었던 게임 창(`prev`)을 계속 읽는다 → 웹 지도 네비가 끊기지 않음.
 /// 그 창이 목록에 그대로 있으면 그 값으로, 목록이 비었으면 창이 살아 있는 동안(`alive`) 그대로. 창이 닫히면 대상 없음
-fn parse_target(line: &Value, prev: Option<&Target>, alive: impl Fn(isize) -> bool) -> Option<Target> {
-    let hw = |r: &str| line[r]["hwnd"].as_str().and_then(|s| isize::from_str_radix(s.trim_start_matches("0x"), 16).ok());
-    let role = match ["hud", "survey"].into_iter().find(|r| line[*r]["active"].as_bool() == Some(true)) {
+fn parse_target(
+    line: &Value,
+    prev: Option<&Target>,
+    alive: impl Fn(isize) -> bool,
+) -> Option<Target> {
+    let hw = |r: &str| {
+        line[r]["hwnd"]
+            .as_str()
+            .and_then(|s| isize::from_str_radix(s.trim_start_matches("0x"), 16).ok())
+    };
+    let role = match ["hud", "survey"]
+        .into_iter()
+        .find(|r| line[*r]["active"].as_bool() == Some(true))
+    {
         Some(r) => r.to_string(),
         None => {
+            // 1.0.13: 마지막 활성 창이 살아 있고 최소화가 아니면 목록 내용과 상관없이 계속 읽는다.
+            // (1.0.12 는 Navigator 가 HUD 를 잠깐 떼거나(해역 이동·측량 끊김) 다른 클라이언트만 survey 로 주면 '대상 없음' → 네비·올리기가 멈췄다)
             let p = prev?;
-            match ["hud", "survey"].into_iter().find(|r| hw(r) == Some(p.hwnd)) {
+            if !alive(p.hwnd) {
+                return None;
+            }
+            match ["hud", "survey"]
+                .into_iter()
+                .find(|r| hw(r) == Some(p.hwnd))
+            {
                 Some(r) => r.to_string(),
-                None if line["hud"].is_null() && line["survey"].is_null() && alive(p.hwnd) => return Some(p.clone()),
-                None => return None,
+                None => return Some(p.clone()),
             }
         }
     };
-    let view = &line[role.as_str()];
+    view_target(line, &role)
+}
+
+/// target 줄의 한 역할(hud·survey) 창. null 이면 None
+fn view_target(line: &Value, role: &str) -> Option<Target> {
+    let view = &line[role];
     let hwnd = isize::from_str_radix(view["hwnd"].as_str()?.trim_start_matches("0x"), 16).ok()?;
     Some(Target {
         generation: line[format!("{role}Generation")].as_u64().unwrap_or(0),
@@ -326,7 +453,7 @@ fn parse_target(line: &Value, prev: Option<&Target>, alive: impl Fn(isize) -> bo
         hwnd,
         width: view["clientWidth"].as_i64().unwrap_or(0),
         height: view["clientHeight"].as_i64().unwrap_or(0),
-        role,
+        role: role.to_string(),
     })
 }
 
@@ -350,14 +477,24 @@ impl Net {
         // 모듈은 한 프로그램이 세 서버를 모두 맡는다 → 감지기와 달리 단독 서버(에이레네)도 주소로 판별한다
         let servers: Vec<String> = cfg.as_ref().map(|c| c.servers.clone()).unwrap_or_default();
         let mut ranges = cfg.as_ref().map(|c| c.ranges.clone()).unwrap_or_default();
-        ranges.extend(EIRENE_RANGES.iter().map(|(a, s)| (a.to_string(), s.to_string())));
+        ranges.extend(
+            EIRENE_RANGES
+                .iter()
+                .map(|(a, s)| (a.to_string(), s.to_string())),
+        );
         let book = netaddr::AddrBook::new(
             &cfg.as_ref().map(|c| c.addrs.clone()).unwrap_or_default(),
             &servers,
             data.map(|d| d.join("addrs.json")),
             &ranges,
         );
-        Net { book, t: 0.0, server: None, miss: 0, addrs: BTreeSet::new() }
+        Net {
+            book,
+            t: 0.0,
+            server: None,
+            miss: 0,
+            addrs: BTreeSet::new(),
+        }
     }
 
     fn reset(&mut self) {
@@ -373,11 +510,25 @@ impl Net {
             return None;
         }
         self.t = t;
-        let addrs = if pid != 0 { netaddr::remote_addrs(pid) } else { BTreeSet::new() };
+        let addrs = if pid != 0 {
+            netaddr::remote_addrs(pid)
+        } else {
+            BTreeSet::new()
+        };
         let net = self.book.server_of(&addrs);
         if addrs != self.addrs {
-            let known: Vec<String> = addrs.iter().map(|a| format!("{a}={}", self.book.lookup(a).unwrap_or_else(|| "?".into()))).collect();
-            log(&format!("[서버] pid {pid} 연결 {}", if known.is_empty() { "(없음)".into() } else { known.join(", ") }));
+            let known: Vec<String> = addrs
+                .iter()
+                .map(|a| format!("{a}={}", self.book.lookup(a).unwrap_or_else(|| "?".into())))
+                .collect();
+            log(&format!(
+                "[서버] pid {pid} 연결 {}",
+                if known.is_empty() {
+                    "(없음)".into()
+                } else {
+                    known.join(", ")
+                }
+            ));
             self.addrs = addrs;
         }
         if net.is_some() {
@@ -402,7 +553,13 @@ fn exe_running() -> bool {
     use windows::Win32::Foundation::CloseHandle;
     use windows::Win32::System::Threading::{OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE};
     let w: Vec<u16> = EXE_MUTEX.encode_utf16().chain(Some(0)).collect();
-    match unsafe { OpenMutexW(SYNCHRONIZATION_SYNCHRONIZE, false, windows::core::PCWSTR(w.as_ptr())) } {
+    match unsafe {
+        OpenMutexW(
+            SYNCHRONIZATION_SYNCHRONIZE,
+            false,
+            windows::core::PCWSTR(w.as_ptr()),
+        )
+    } {
         Ok(h) => {
             unsafe {
                 let _ = CloseHandle(h);
@@ -424,8 +581,18 @@ fn event_json(ev: &Event, server: &Option<String>) -> Value {
     match ev {
         Event::City(c) => json!({ "kind": "city", "city": c }),
         Event::Note(m) => json!({ "kind": "note", "text": m }),
-        Event::News { city, texts } => json!({ "kind": "news", "server": server, "city": city, "texts": texts, "ready": server.is_some() }),
-        Event::Nanban { culture, city, kind, pts, states, seen, .. } => json!({
+        Event::News { city, texts } => {
+            json!({ "kind": "news", "server": server, "city": city, "texts": texts, "ready": server.is_some() })
+        }
+        Event::Nanban {
+            culture,
+            city,
+            kind,
+            pts,
+            states,
+            seen,
+            ..
+        } => json!({
             "kind": "nanban", "server": server, "ready": server.is_some(), "culture": culture, "city": city, "cat": kind,
             "pts": pts, "states": states.iter().map(|(c, v)| json!([c, v])).collect::<Vec<_>>(), "seen": seen,
         }),
@@ -472,59 +639,131 @@ fn hud_say(h: &Hud, data: &Value) {
     let fg = hud::FG;
     match data["kind"].as_str() {
         Some("server") => match data["server"].as_str() {
-            Some(s) => h.say("server", vec![pb(s, server_color(s)), p(" 서버 확인", fg)], 2500),
-            None => h.say("server", vec![p("서버를 모름 · 시세를 올리지 않습니다", WARN)], 4000),
+            Some(s) => h.say(
+                "server",
+                vec![pb(s, server_color(s)), p(" 서버 확인", fg)],
+                2500,
+            ),
+            None => h.say(
+                "server",
+                vec![p("서버를 모름 · 시세를 올리지 않습니다", WARN)],
+                4000,
+            ),
         },
         Some("city") => {
             if let Some(c) = data["city"].as_str() {
-                h.say("city", vec![p(format!("{c} 도착 · "), fg), p("교역소 창을 열면 시세를 읽습니다", MUTED)], 3000);
+                h.say(
+                    "city",
+                    vec![
+                        p(format!("{c} 도착 · "), fg),
+                        p("교역소 창을 열면 시세를 읽습니다", MUTED),
+                    ],
+                    3000,
+                );
             }
         }
-        Some("note") => h.say("note", vec![p(data["text"].as_str().unwrap_or(""), fg)], 2500),
+        Some("note") => h.say(
+            "note",
+            vec![p(data["text"].as_str().unwrap_or(""), fg)],
+            2500,
+        ),
         // 0.10.0 교역소 대사: 올렸을 때만 짧게
         Some("news") => {
             let n = data["uploaded"].as_u64().unwrap_or(0);
             if n > 0 {
                 let texts = data["texts"].as_array().cloned().unwrap_or_default();
                 let last = texts.last().and_then(|v| v.as_str()).unwrap_or("");
-                h.say("news", vec![p(format!("{} 교역소 대사 · ", data["city"].as_str().unwrap_or("")), fg), p(last, MUTED)], 3500);
+                h.say(
+                    "news",
+                    vec![
+                        p(
+                            format!("{} 교역소 대사 · ", data["city"].as_str().unwrap_or("")),
+                            fg,
+                        ),
+                        p(last, MUTED),
+                    ],
+                    3500,
+                );
             }
         }
         // 0.10.0 남만무역: 도시·분류를 새로 읽을 때마다 '나가사키의 식료품 재고 인식' (감지기와 같은 글, 도시·분류는 주황)
         Some("nanban") => {
             if data["ready"] != true {
                 if data["seen"] == true {
-                    h.say("nanban", vec![p("서버를 몰라 남만무역 정보를 올리지 않습니다", WARN)], 4000);
+                    h.say(
+                        "nanban",
+                        vec![p("서버를 몰라 남만무역 정보를 올리지 않습니다", WARN)],
+                        4000,
+                    );
                 }
                 return;
             }
             if data["seen"] != true {
                 return;
             }
-            let (Some(c), Some(k)) = (data["city"].as_str(), data["cat"].as_str()) else { return };
-            h.say("nanban", vec![pb(c, HL), p("의 ", fg), pb(k, HL), p(" 재고 인식", fg)], 2500);
+            let (Some(c), Some(k)) = (data["city"].as_str(), data["cat"].as_str()) else {
+                return;
+            };
+            h.say(
+                "nanban",
+                vec![pb(c, HL), p("의 ", fg), pb(k, HL), p(" 재고 인식", fg)],
+                2500,
+            );
         }
         Some("near") => {
             if data["ready"] != true {
-                h.say("trade", vec![p("서버를 몰라 인근 시세를 올리지 않습니다", WARN)], 4000);
+                h.say(
+                    "trade",
+                    vec![p("서버를 몰라 인근 시세를 올리지 않습니다", WARN)],
+                    4000,
+                );
                 return;
             }
             let items = data["items"].as_array().cloned().unwrap_or_default();
             let first = items.first().map_or(String::new(), |r| {
-                format!("{} {}%{}", r["city"].as_str().unwrap_or(""), r["pct"], r["tr"].as_str().unwrap_or(""))
+                format!(
+                    "{} {}%{}",
+                    r["city"].as_str().unwrap_or(""),
+                    r["pct"],
+                    r["tr"].as_str().unwrap_or("")
+                )
             });
-            let more = if items.len() > 1 { format!(" 외 {}곳", items.len() - 1) } else { String::new() };
+            let more = if items.len() > 1 {
+                format!(" 외 {}곳", items.len() - 1)
+            } else {
+                String::new()
+            };
             let srv = data["server"].as_str().unwrap_or("");
             let tail = match data["uploaded"].as_str() {
-                Some(to) if Some(to) == upload::TEST_SERVER => {
-                    p(format!("· {} 캐릭터로 시험 서버에 올림", data["by"].as_str().unwrap_or("미확인")), MUTED)
-                }
-                Some(_) => p(format!("· {} 캐릭터로 올림", data["by"].as_str().unwrap_or("미확인")), fg),
+                Some(to) if Some(to) == upload::TEST_SERVER => p(
+                    format!(
+                        "· {} 캐릭터로 시험 서버에 올림",
+                        data["by"].as_str().unwrap_or("미확인")
+                    ),
+                    MUTED,
+                ),
+                Some(_) => p(
+                    format!(
+                        "· {} 캐릭터로 올림",
+                        data["by"].as_str().unwrap_or("미확인")
+                    ),
+                    fg,
+                ),
                 None => p("· 올리지 못함 (공유 서버 설정 없음)", WARN),
             };
             h.say(
                 "trade",
-                vec![pb(srv, server_color(srv)), p(format!(" 인근 시세 {} · {first}{more} ", data["good"].as_str().unwrap_or("")), fg), tail],
+                vec![
+                    pb(srv, server_color(srv)),
+                    p(
+                        format!(
+                            " 인근 시세 {} · {first}{more} ",
+                            data["good"].as_str().unwrap_or("")
+                        ),
+                        fg,
+                    ),
+                    tail,
+                ],
                 6000,
             );
         }
@@ -536,7 +775,11 @@ fn hud_say(h: &Hud, data: &Value) {
                     Some(w) => w,
                     None => "",
                 };
-                h.say("trade", vec![p(format!("{why} 시세를 올리지 않습니다"), WARN)], 4000);
+                h.say(
+                    "trade",
+                    vec![p(format!("{why} 시세를 올리지 않습니다"), WARN)],
+                    4000,
+                );
                 return;
             }
             let rows = data["rows"].as_array().cloned().unwrap_or_default();
@@ -545,22 +788,56 @@ fn hud_say(h: &Hud, data: &Value) {
                     Value::Number(n) => format!("{n}%"),
                     v => v.as_str().unwrap_or("").to_string(),
                 };
-                format!("{} {} {}{}", r["name"].as_str().unwrap_or(""), r["price"], pct, r["tr"].as_str().unwrap_or(""))
+                format!(
+                    "{} {} {}{}",
+                    r["name"].as_str().unwrap_or(""),
+                    r["price"],
+                    pct,
+                    r["tr"].as_str().unwrap_or("")
+                )
             });
-            let more = if rows.len() > 1 { format!(" 외 {}종", rows.len() - 1) } else { String::new() };
+            let more = if rows.len() > 1 {
+                format!(" 외 {}종", rows.len() - 1)
+            } else {
+                String::new()
+            };
             let srv = data["server"].as_str().unwrap_or("");
-            let kind = if data["type"] == "market" { "시세 창" } else { "매각" };
+            let kind = if data["type"] == "market" {
+                "시세 창"
+            } else {
+                "매각"
+            };
             // 4단계: 올린 곳과 등록자. 시험 서버면 그렇다고 흐리게 붙인다
             let tail = match data["uploaded"].as_str() {
-                Some(to) if Some(to) == upload::TEST_SERVER => {
-                    p(format!("· {} 캐릭터로 시험 서버에 올림", data["by"].as_str().unwrap_or("미확인")), MUTED)
-                }
-                Some(_) => p(format!("· {} 캐릭터로 올림", data["by"].as_str().unwrap_or("미확인")), fg),
+                Some(to) if Some(to) == upload::TEST_SERVER => p(
+                    format!(
+                        "· {} 캐릭터로 시험 서버에 올림",
+                        data["by"].as_str().unwrap_or("미확인")
+                    ),
+                    MUTED,
+                ),
+                Some(_) => p(
+                    format!(
+                        "· {} 캐릭터로 올림",
+                        data["by"].as_str().unwrap_or("미확인")
+                    ),
+                    fg,
+                ),
                 None => p("· 올리지 못함 (공유 서버 설정 없음)", WARN),
             };
             h.say(
                 "trade",
-                vec![pb(srv, server_color(srv)), p(format!(" {} {kind} {first}{more} ", data["city"].as_str().unwrap_or("")), fg), tail],
+                vec![
+                    pb(srv, server_color(srv)),
+                    p(
+                        format!(
+                            " {} {kind} {first}{more} ",
+                            data["city"].as_str().unwrap_or("")
+                        ),
+                        fg,
+                    ),
+                    tail,
+                ],
                 6000,
             );
         }
@@ -576,24 +853,34 @@ fn plausible(name: &str) -> bool {
     (2..=12).contains(&n) && !(hangul && latin)
 }
 
-fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<AtomicBool>) {
+fn worker(
+    target: Arc<Mutex<Option<Target>>>,
+    survey: Arc<Mutex<Option<Target>>>,
+    data: Option<PathBuf>,
+    stop: Arc<AtomicBool>,
+) {
     let hud = HUD.get_or_init(|| Hud::start(false)).clone();
     let mut up = upload::Uploader::new(data.as_ref());
-    log(&format!("[올리기] {}", match (up.ready(), upload::TEST_SERVER) {
-        (false, _) => "공유 서버 설정이 없어 올리지 않습니다".to_string(),
-        (true, Some(s)) => format!("시험 서버 '{s}' 경로에만 올립니다"),
-        (true, None) => "읽은 서버에 올립니다".to_string(),
-    }));
+    log(&format!(
+        "[올리기] {}",
+        match (up.ready(), upload::TEST_SERVER) {
+            (false, _) => "공유 서버 설정이 없어 올리지 않습니다".to_string(),
+            (true, Some(s)) => format!("시험 서버 '{s}' 경로에만 올립니다"),
+            (true, None) => "읽은 서버에 올립니다".to_string(),
+        }
+    ));
     let (mut checked, mut city): (bool, Option<String>) = (false, None);
     // 등록자: 왼쪽 위 함대 목록의 자기 이름 (교역 창이 없을 때 5초마다 읽는다)
     let (mut chr, mut t_chr): (Option<String>, f64) = (None, 0.0);
     name_file_init(&data);
     let (mut file_names, mut t_file): (Vec<String>, f64) = (vec![], -9.0);
     // 적힌 이름들(설정 + 파일)과 화면 확인 결과 (None = 아직 못 봄), 맞은 이름
-    let (mut declared, mut verified, mut miss): (Vec<String>, Option<bool>, u32) = (vec![], None, 0);
+    let (mut declared, mut verified, mut miss): (Vec<String>, Option<bool>, u32) =
+        (vec![], None, 0);
     let mut matched: Option<String> = None;
     // 이름 입력 창 (0.5.4): 이름이 없을 때 한 번, 파일 이름이 화면과 다를 때 한 번. '나중에'면 이번 실행 동안 다시 안 묻는다
-    let (mut ask, mut asked_missing, mut asked_mismatch): (Option<ask::Handle>, bool, bool) = (None, false, false);
+    let (mut ask, mut asked_missing, mut asked_mismatch): (Option<ask::Handle>, bool, bool) =
+        (None, false, false);
     // 입력 창에서 '나중에'를 눌렀으면 이번 실행 동안 다시 묻지 않는다 (캐릭터를 바꿔도)
     let mut said_later = false;
     // 1.0.4: 게임 창(pid)마다 HUD 로 알린 캐릭터 이름. 다시 붙어도(해역 이동·창 바꾸기) 지우지 않는다 → 같은 이름이면 다시 안 알림
@@ -602,7 +889,10 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     // 화면 이름 칸에서 마지막으로 읽힌 글자 (입력 창에 미리 채운다)
     let mut seen_name: Option<String> = None;
     let t0 = std::time::Instant::now();
-    let mut rd = Reader::with_icons(recognizer(data.as_ref()), data.as_ref().map(|d| d.join("nanban_icons")));
+    let mut rd = Reader::with_icons(
+        recognizer(data.as_ref()),
+        data.as_ref().map(|d| d.join("nanban_icons")),
+    );
     log(&format!("[준비] 이름 목록·글자 그림 {:?}", t0.elapsed()));
     let mut net = Net::new(data.as_ref());
     let mut cur: Option<Target> = None;
@@ -619,7 +909,15 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     });
     let _ = NAV_PORT.set(port);
     let mut navs: HashMap<isize, NavSt> = HashMap::new();
+    // 1.0.13: 측량 클라이언트가 지금 읽는 창과 다르면 그 창을 따로 복사해 좌표만 읽는다 (창 번호, 복사, 마지막 장 시각)
+    let mut nav_cap: Option<(isize, capture::WindowCapture, f64)> = None;
     let mut update_told: Option<String> = None;
+    // 1.0.14: 마지막으로 맨 앞에 있던 게임 창 (Navigator 목록에 없어도 읽는다), 확인 시각
+    let (mut last_fg, mut t_fg): (Option<isize>, f64) = (None, 0.0);
+    // 1.0.13(재): 직접 찾은 창의 pid 를 마지막으로 찾은 시각
+    let mut t_pid = 0.0;
+    // 1.0.14: 같은 창이 다시 붙어 전에 확인한 이름을 이어 왔는지 (첫 서버 읽기에서 지우지 않게)
+    let mut carried = false;
     while !stop.load(Ordering::SeqCst) && !GONE.load(Ordering::SeqCst) {
         std::thread::sleep(Duration::from_millis(20));
         let t = now();
@@ -635,20 +933,64 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 }
             }
         }
-        let want = if paused == Some(true) { None } else { target.lock().unwrap().clone() };
+        let mut want = if paused == Some(true) {
+            None
+        } else {
+            target.lock().unwrap().clone()
+        };
+        // 1.0.14 (2026-11-28 다른 PC: Navigator 가 라이거냥이 클라이언트를 hud·survey 어디에도 주지 않아 그 창은 아예 안 읽혔다):
+        // 맨 앞에 띄운 게임 창(제목 '대항해시대 온라인')을 기억해 두고, Navigator 가 준 창과 다르면 그 창을 직접 읽는다.
+        // 브라우저 등 다른 창이 앞에 와도 그 게임 창이 살아 있고 최소화가 아니면 계속 읽는다
+        if paused == Some(true) {
+            last_fg = None;
+        } else {
+            if t - t_fg >= 0.3 {
+                t_fg = t;
+                let f = capture::foreground();
+                if f != 0 && capture::window_title(f) == capture::GAME_TITLE {
+                    last_fg = Some(f);
+                }
+            }
+            if last_fg.is_some_and(|f| !capture::is_window(f) || capture::is_minimized(f)) {
+                last_fg = None;
+            }
+            if let Some(f) = last_fg.filter(|f| want.as_ref().map(|w| w.hwnd) != Some(*f)) {
+                let (width, height) = capture::client_size(f);
+                // 같은 창을 이미 직접 읽는 중이면 그 값 그대로 (매번 새로 만들면 복사가 다시 시작됨)
+                // pid 를 못 얻었으면 2초마다 다시 찾는다 (1.0.13(재))
+                want = match &cur {
+                    Some(c) if c.role == OWN && c.hwnd == f && (c.pid != 0 || t - t_pid < 2.0) => Some(c.clone()),
+                    _ => Some(Target {
+                        role: OWN.into(),
+                        generation: 0,
+                        pid: {
+                            t_pid = t;
+                            let svk = survey.lock().unwrap().clone();
+                            own_pid(f, &[want.as_ref(), svk.as_ref()])
+                        },
+                        hwnd: f,
+                        width,
+                        height,
+                    }),
+                };
+            }
+        }
         // HUD 는 감지기 exe 가 켜져 있으면 숨는다 (감지기 HUD 와 같은 자리라 겹치지 않게)
         // 1.0.4: 'HUD 끄기'는 위 줄·알림만 숨긴다 (남만 틱 HUD 는 보이게 게임 창은 그대로 준다)
         hud.set_game(want.as_ref().map(|w| w.hwnd));
         hud.set_off(HUD_OFF.load(Ordering::Relaxed));
         // 대상 창이 바뀜: 복사를 새로 시작하고 읽던 것을 버린다 (같은 창의 크기 변화는 그대로, 활성이 아니면 대상 없음)
         let same = match (&cur, &want) {
-            (Some(a), Some(b)) => a.hwnd == b.hwnd && a.pid == b.pid && a.generation == b.generation,
+            (Some(a), Some(b)) => {
+                a.hwnd == b.hwnd && a.pid == b.pid && a.generation == b.generation
+            }
             (None, None) => true,
             _ => false,
         };
         // 1.0.8: 해역 이동·창 바꾸기 때 Navigator 는 같은 창(같은 hwnd·pid)을 세대만 바꿔 다시 준다 (기록에 하루 수백 번).
         // 그때마다 복사·도시·이름 확인을 처음부터 하면 잠깐 도시를 모르고 등록자가 '미확인'이 되므로, 같은 창이면 이어서 읽는다
-        let same_window = cap.is_some() && matches!((&cur, &want), (Some(a), Some(b)) if a.hwnd == b.hwnd && a.pid == b.pid);
+        let same_window = cap.is_some()
+            && matches!((&cur, &want), (Some(a), Some(b)) if a.hwnd == b.hwnd && a.pid == b.pid);
         if !same && same_window {
             cur = want.clone();
         } else if !same {
@@ -662,36 +1004,120 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             (chr, t_chr) = (None, 0.0);
             (verified, miss, matched) = (None, 0, None);
             (t_game0, seen_name) = (now(), None);
+            // 1.0.14: 같은 게임 창(pid)이 다시 붙으면 전에 확인한 이름을 그대로 쓴다 (00:07:24 다시 붙은 직후 남만이 '미확인'으로 올라감).
+            // 접속이 바뀌면(캐릭터 바꾸기) 아래 net.update 에서 다시 처음부터 확인한다
+            if let Some(n) = want
+                .as_ref()
+                .and_then(|w| announced.get(&w.pid))
+                .filter(|n| declared.contains(n))
+            {
+                (verified, matched) = (Some(true), Some(n.clone()));
+                carried = true;
+            }
             hud.set_status(status_parts(&None, false, &None));
             match &want {
                 Some(w) => {
-                    log(&format!("[게임 창] 연결 · {} 세대 {} · {}×{}", w.role, w.generation, w.width, w.height));
+                    log(&format!(
+                        "[게임 창] 연결 · {} 세대 {} · {}×{} · pid {}",
+                        w.role, w.generation, w.width, w.height, w.pid
+                    ));
                     cap = Some(capture::WindowCapture::new(w.hwnd, SLOW_MS));
                 }
                 None => log("[게임 창] 없음 · 화면 복사를 멈춥니다"),
             }
             cur = want;
         }
-        let (Some(tg), Some(c)) = (&cur, &cap) else { continue };
-        let role = Some((tg.role.as_str(), tg.generation));
+        // 1.0.13 (사용자 "네비 좌표는 측량을 켠 클라이언트에서"): 시세·도시·이름은 활성 창(cur)에서, 웹 지도 네비 좌표는
+        // Navigator 가 알려 준 측량 원본 클라이언트(survey)에서 읽는다. 둘이 같은 창이면 아래 본 복사에서 같이 읽는다
+        let sv = if paused == Some(true) {
+            None
+        } else {
+            survey.lock().unwrap().clone()
+        };
+        let nav_h = sv
+            .as_ref()
+            .map(|s| s.hwnd)
+            .filter(|h| cur.as_ref().map(|c| c.hwnd) != Some(*h));
+        if nav_cap.as_ref().map(|n| n.0) != nav_h {
+            if let Some((h, c, _)) = nav_cap.take() {
+                c.stop();
+                log("[네비] 측량 창 따로 읽기를 멈춤");
+                // 그 창을 이제 본 복사에서 읽으면 배를 지우지 않고 이어 간다
+                if let Some(s) = navs
+                    .get_mut(&h)
+                    .filter(|_| cur.as_ref().map(|c| c.hwnd) != Some(h))
+                {
+                    if s.t_nav > 0.0 {
+                        nav_hub.drop_ship(h);
+                    }
+                    (s.t_nav, s.xy, s.hd, s.bw) = (0.0, None, None, None);
+                }
+            }
+            if let Some(h) = nav_h {
+                log(&format!(
+                    "[네비] 측량 클라이언트(창 {h:#X})를 따로 읽어 좌표를 웹 지도에 보냅니다"
+                ));
+                nav_cap = Some((h, capture::WindowCapture::new(h, SLOW_MS), 0.0));
+            }
+        }
+        if let (Some((h, nc, seen)), Some(s)) = (nav_cap.as_mut(), sv.as_ref()) {
+            if let Some(f) = nc.latest() {
+                if f.at != *seen && t - f.at <= 5.0 {
+                    *seen = f.at;
+                    let off = nc.client_offset();
+                    let co = recog::nav::read_coords(&f.rgb, off);
+                    let (hd, bw) = match co {
+                        Some(_) => (
+                            recog::nav::read_heading(&f.rgb, off),
+                            recog::nav::read_bow(&f.rgb, off),
+                        ),
+                        None => (None, None),
+                    };
+                    // 그 클라이언트의 캐릭터 이름: 전에 활성 창으로 읽었을 때 확인한 이름
+                    let who = announced.get(&s.pid).cloned().unwrap_or_default();
+                    let on = navs
+                        .entry(*h)
+                        .or_default()
+                        .step(&nav_hub, *h, &who, co, t, hd, bw);
+                    nc.set_interval(if on { NAV_MS } else { SLOW_MS });
+                }
+            }
+        }
+        let (Some(tg), Some(c)) = (&cur, &cap) else {
+            continue;
+        };
+        // 직접 찾은 창(OWN)은 Navigator 세대가 없으니 대상 없는 알림으로 보낸다 (세대가 틀리면 Navigator 가 버림)
+        let role = if tg.role == OWN {
+            None
+        } else {
+            Some((tg.role.as_str(), tg.generation))
+        };
         let before = net.server.clone();
         if let Some(srv) = net.update(tg.pid, t) {
-            // 접속이 바뀌면(캐릭터 바꾸기·서버 이동) 이름 확인을 처음부터 (0.6.3, 2026-11-22: 에이레네 티아마트 → 헬레네 캐릭터로 바꾼 뒤
-            // 첫 시세가 이름 칸을 다시 보기 전에 '티아마트'로 올라갔음). 다시 맞춰 볼 때까지 등록자는 '미확인'
-            if verified.is_some() || chr.is_some() {
-                log("[등록자] 접속이 바뀌어 캐릭터 이름을 다시 확인합니다");
+            // 1.0.14: 다시 붙은 직후 서버를 처음 읽은 것은 접속이 바뀐 게 아니다 → 이어 온 이름 확인을 지우지 않는다
+            let keep_name = std::mem::take(&mut carried) && before.is_none();
+            if !keep_name {
+                // 접속이 바뀌면(캐릭터 바꾸기·서버 이동) 이름 확인을 처음부터 (0.6.3, 2026-11-22: 에이레네 티아마트 → 헬레네 캐릭터로 바꾼 뒤
+                // 첫 시세가 이름 칸을 다시 보기 전에 '티아마트'로 올라갔음). 다시 맞춰 볼 때까지 등록자는 '미확인'
+                if verified.is_some() || chr.is_some() {
+                    log("[등록자] 접속이 바뀌어 캐릭터 이름을 다시 확인합니다");
+                }
+                (verified, miss, t_chr, matched) = (None, 0, 0.0, None);
+                chr = None;
+                // 다른 캐릭터면 이름 창을 다시 띄울 수 있게 ('나중에'를 눌렀으면 그대로)
+                asked_mismatch = said_later;
             }
-            (verified, miss, t_chr, matched) = (None, 0, 0.0, None);
-            chr = None;
-            // 다른 캐릭터면 이름 창을 다시 띄울 수 있게 ('나중에'를 눌렀으면 그대로)
-            asked_mismatch = said_later;
             let d = json!({ "kind": "server", "server": srv });
             emit(role, d.clone());
             checked = true;
             hud.set_status(status_parts(&net.server, checked, &city));
             // 1.0.1: 알던 서버에서 접속이 끊기거나 바뀜 = 캐릭터를 바꿈 (감지기 '캐릭터가 바뀜 · 서버 확인 중'과 같은 뜻)
             if before.is_some() && srv.is_none() {
-                hud.say("server", vec![p("캐릭터가 바뀜. 서버 재인식", hud::FG)], 3000);
+                hud.say(
+                    "server",
+                    vec![p("캐릭터가 바뀜. 서버 재인식", hud::FG)],
+                    3000,
+                );
             } else {
                 hud_say(&hud, &d);
             }
@@ -712,7 +1138,11 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         // 바다 지명을 못 읽는 동안 sea 가 false 로 남아 '헬레네' 같은 HUD 가 바다에서 떴다. 도시 HUD 는 도시를 읽은 뒤에만
         // (이 프레임에서 도시를 새로 읽었으면 rd.city 가 이미 채워져 있어 '도착' 알림은 보인다)
         // 1.0.5: 웹 지도 네비. 교역 창이 열려 있지 않으면 측량 좌표를 읽는다 (감지기와 같음)
-        let coords = if open { None } else { recog::nav::read_coords(&frame.rgb, c.client_offset()) };
+        let coords = if open {
+            None
+        } else {
+            recog::nav::read_coords(&frame.rgb, c.client_offset())
+        };
         // 1.0.8: 측량 좌표는 바다에서만 보인다 → 지명을 못 읽어도 앞 도시를 지우고 HUD 를 숨긴다
         if coords.is_some() {
             if let Some(ev) = rd.at_sea() {
@@ -728,18 +1158,31 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 update_told = v.clone();
                 let v = v.unwrap();
                 log(&format!("[업데이트] 새 버전 {v} 알림"));
-                hud.say("update", vec![p(format!("시세 모듈 새 버전 {v} · "), hud::FG), p("Navigator 패널 맨 위 '업데이트' 버튼으로 설치", MUTED)], 8000);
+                hud.say(
+                    "update",
+                    vec![
+                        p(format!("시세 모듈 새 버전 {v} · "), hud::FG),
+                        p("Navigator 패널 맨 위 '업데이트' 버튼으로 설치", MUTED),
+                    ],
+                    8000,
+                );
             }
         }
         let (hd, bw) = match coords {
-            Some(_) => (recog::nav::read_heading(&frame.rgb, c.client_offset()), recog::nav::read_bow(&frame.rgb, c.client_offset())),
+            Some(_) => (
+                recog::nav::read_heading(&frame.rgb, c.client_offset()),
+                recog::nav::read_bow(&frame.rgb, c.client_offset()),
+            ),
             None => (None, None),
         };
         let who = matched.clone().or_else(|| chr.clone()).unwrap_or_default();
-        let sailing = navs.entry(tg.hwnd).or_default().step(&nav_hub, tg.hwnd, &who, coords, t, hd, bw);
+        let sailing = navs
+            .entry(tg.hwnd)
+            .or_default()
+            .step(&nav_hub, tg.hwnd, &who, coords, t, hd, bw);
         // 지금 안 보는 창(다른 클라이언트로 바뀜)의 배는 좌표가 끊긴 것처럼 지운다
         navs.retain(|h, s| {
-            let gone = *h != tg.hwnd && t - s.t_nav > NAV_LOST_SEC;
+            let gone = *h != tg.hwnd && Some(*h) != nav_h && t - s.t_nav > NAV_LOST_SEC;
             if gone && s.t_nav > 0.0 {
                 nav_hub.drop_ship(*h);
                 (s.t_nav, s.xy, s.hd, s.bw) = (0.0, None, None, None);
@@ -756,11 +1199,27 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         } else if t - rd.t_trade > 1.5 {
             c.set_interval(SLOW_MS);
         }
+        // 1.0.14: 패널에서 이름 목록을 저장함 → 확인을 처음부터 (화면 이름이 목록에 없으면 입력 창도 다시 묻는다)
+        if NAMES_RECHECK.swap(false, Ordering::SeqCst) {
+            (verified, miss, t_chr, matched) = (None, 0, 0.0, None);
+            (asked_missing, asked_mismatch, said_later) = (false, false, false);
+            announced.clear();
+            t_file = -9.0;
+            log("[등록자] 패널에서 이름 목록을 고침 · 화면 이름과 다시 맞춰 봅니다");
+        }
         if t - t_file >= 5.0 {
             t_file = t;
             let n = name_file_read(&data);
             if n != file_names {
-                log(&format!("[등록자] {NAME_FILE} 이름 {}", if n.is_empty() { "(없음)".into() } else { n.join(", ") }));
+                emit_names(&data);
+                log(&format!(
+                    "[등록자] {NAME_FILE} 이름 {}",
+                    if n.is_empty() {
+                        "(없음)".into()
+                    } else {
+                        n.join(", ")
+                    }
+                ));
                 file_names = n;
             }
         }
@@ -787,7 +1246,10 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 t_chr = 0.0;
             }
             if !declared.is_empty() {
-                log(&format!("[등록자] 적힌 이름 {} · 화면 이름과 맞춰 봅니다", declared.join(", ")));
+                log(&format!(
+                    "[등록자] 적힌 이름 {} · 화면 이름과 맞춰 봅니다",
+                    declared.join(", ")
+                ));
             }
         }
         if !open && t - t_chr >= 5.0 {
@@ -797,7 +1259,11 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 log(&l);
             }
             // 입력 창에 미리 채울 글자: 이름답지 않아도(숫자 섞임 등) 읽힌 대로. 한두 글자만 고치면 되게
-            if let Some(n) = raw.clone().map(|n| n.trim().to_string()).filter(|n| upload::by_ok(n)) {
+            if let Some(n) = raw
+                .clone()
+                .map(|n| n.trim().to_string())
+                .filter(|n| upload::by_ok(n))
+            {
                 seen_name = Some(n);
             }
             if !declared.is_empty() {
@@ -808,17 +1274,34 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                             log(&format!("[등록자] {n} · 화면 이름과 맞음"));
                             if announced.get(&tg.pid) != Some(n) {
                                 announced.insert(tg.pid, n.clone());
-                                hud.say("name", vec![p(format!("{n} 캐릭터 확인 · 이 이름으로 올립니다"), hud::FG)], 3000);
+                                hud.say(
+                                    "name",
+                                    vec![p(
+                                        format!("{n} 캐릭터 확인 · 이 이름으로 올립니다"),
+                                        hud::FG,
+                                    )],
+                                    3000,
+                                );
                             }
                         }
                         (verified, miss, matched) = (Some(true), 0, Some(n.clone()));
                     }
-                    // 이름 칸에 글자는 있는데 모양이 다르다: 두 번 연속이면 다른 캐릭터로 본다
+                    // 1.0.14 (2026-11-28 사용자 "미확인으로 너무 쉽게 뜸"): 이름 칸이 가려지거나 배경 때문에 '합크님5이'처럼 깨져 읽히면
+                    // 2~3분마다 '미확인'이 됐다. 이름답지 않은 글자(한글+영숫자 섞임 등)는 다른 캐릭터로 치지 않고 마지막 결과 그대로
+                    Some(n) if !plausible(n) => {
+                        capture::say_once(&format!("[등록자] 이름 칸 글자가 깨져 읽힘 ({n}) · 마지막 확인 결과 그대로"));
+                    }
+                    // 이름다운 다른 글자: 처음 확인 중이면 두 번, 이미 맞은 이름이 있으면 세 번 연속일 때 다른 캐릭터로 본다
+                    // (캐릭터를 바꾸면 접속이 바뀌어 위 net.update 에서 처음부터 다시 확인한다)
                     Some(n) => {
                         miss += 1;
-                        if miss >= 2 && verified != Some(false) {
+                        let need = if verified == Some(true) { 3 } else { 2 };
+                        if miss >= need && verified != Some(false) {
                             (verified, matched) = (Some(false), None);
-                            log(&format!("[등록자] 화면 이름이 적힌 이름({})과 다름 (읽힌 글자 {n}) · 등록자는 '미확인'", declared.join(", ")));
+                            log(&format!(
+                                "[등록자] 화면 이름이 적힌 이름({})과 다름 (읽힌 글자 {n}) · 등록자는 '미확인'",
+                                declared.join(", ")
+                            ));
                             hud.say("name", vec![p("화면의 캐릭터 이름이 저장된 이름과 달라 등록자를 '미확인'으로 올립니다", WARN)], 6000);
                         }
                     }
@@ -828,7 +1311,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             } else {
                 let n = raw.clone().filter(|n| plausible(n) && upload::by_ok(n));
                 if n.is_none() && chr.is_none() {
-                    capture::say_once(&format!("[캐릭터] 이름을 못 읽음 (읽힌 글자 {raw:?}) · 등록자는 '미확인'"));
+                    capture::say_once(&format!(
+                        "[캐릭터] 이름을 못 읽음 (읽힌 글자 {raw:?}) · 등록자는 '미확인'"
+                    ));
                 }
                 if let Some(n) = n {
                     if chr.as_ref() != Some(&n) {
@@ -841,10 +1326,19 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 }
             }
         }
+        // 1.0.14: 지금 맞은 이름이 바뀌면 패널에 알린다
+        let cur_name = matched.clone().filter(|_| verified == Some(true));
+        if *NAMES_CUR.lock().unwrap() != cur_name {
+            *NAMES_CUR.lock().unwrap() = cur_name;
+            emit_names(&data);
+        }
         // 이름 입력 창: 교역 창이 닫혀 있고 게임 창이 맨 앞일 때만 (교역 중에 가리지 않게)
         let from_file = SET_NAME.lock().unwrap().is_empty();
         if ask.is_none() && !open && capture::foreground() == tg.hwnd {
-            let why = if declared.is_empty() && !asked_missing && (seen_name.is_some() || t - t_game0 > 30.0) {
+            let why = if declared.is_empty()
+                && !asked_missing
+                && (seen_name.is_some() || t - t_game0 > 30.0)
+            {
                 asked_missing = true;
                 Some(match &seen_name {
                     Some(_) => "화면에서 읽은 이름을 채워 두었습니다. 맞으면 Enter, 틀린 글자가 있으면 고쳐 주세요.".to_string(),
@@ -857,10 +1351,23 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                 None
             };
             if let Some(why) = why {
-                let pre = seen_name.clone().filter(|n| !declared.contains(n)).unwrap_or_default();
-                log(&format!("[등록자] 이름 입력 창 · 미리 채운 이름 {}", if pre.is_empty() { "(없음)" } else { &pre }));
+                let pre = seen_name
+                    .clone()
+                    .filter(|n| !declared.contains(n))
+                    .unwrap_or_default();
+                log(&format!(
+                    "[등록자] 이름 입력 창 · 미리 채운 이름 {}",
+                    if pre.is_empty() { "(없음)" } else { &pre }
+                ));
                 ask = Some(ask::open(tg.hwnd, pre, why));
-                hud.say("name", vec![p("캐릭터 이름 입력 창이 떴습니다 · 창을 눌러 확인해 주세요", WARN)], 8000);
+                hud.say(
+                    "name",
+                    vec![p(
+                        "캐릭터 이름 입력 창이 떴습니다 · 창을 눌러 확인해 주세요",
+                        WARN,
+                    )],
+                    8000,
+                );
             }
         }
         if let Some(a) = ask.as_ref().and_then(|h| h.lock().unwrap().clone()) {
@@ -868,7 +1375,10 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             match a {
                 ask::Answer::Name(n) => {
                     let ok = name_file_add(&data, &n);
-                    log(&format!("[등록자] 입력 창에서 {n} · {NAME_FILE}에 {}", if ok { "더함" } else { "저장 못 함" }));
+                    log(&format!(
+                        "[등록자] 입력 창에서 {n} · {NAME_FILE}에 {}",
+                        if ok { "더함" } else { "저장 못 함" }
+                    ));
                     if ok {
                         t_file = -9.0; // 바로 다시 읽는다
                         // 이미 있던 이름을 다시 적었으면 확인을 처음부터
@@ -876,7 +1386,14 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                             (verified, miss, t_chr, matched) = (None, 0, 0.0, None);
                         }
                     }
-                    hud.say("name", vec![p(format!("캐릭터 이름 {n} 저장 · 화면 이름과 맞춰 봅니다"), hud::FG)], 4000);
+                    hud.say(
+                        "name",
+                        vec![p(
+                            format!("캐릭터 이름 {n} 저장 · 화면 이름과 맞춰 봅니다"),
+                            hud::FG,
+                        )],
+                        4000,
+                    );
                 }
                 ask::Answer::Later => {
                     said_later = true;
@@ -889,25 +1406,67 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
             let mut d = event_json(ev, &net.server);
             // 적힌 이름은 화면과 맞을 때만 쓴다. 적힌 이름이 없으면 화면에서 읽은 이름 (확인 안 된 이름)
             let by = if !declared.is_empty() {
-                matched.clone().filter(|_| verified == Some(true)).unwrap_or_else(|| "미확인".into())
+                matched
+                    .clone()
+                    .filter(|_| verified == Some(true))
+                    .unwrap_or_else(|| "미확인".into())
             } else {
                 chr.clone().unwrap_or_else(|| "미확인".into())
             };
-            if let (Event::Near { good, items }, Some(srv), true) = (ev, &net.server, d["ready"] == true) {
+            if let (Event::Near { good, items }, Some(srv), true) =
+                (ev, &net.server, d["ready"] == true)
+            {
                 let to = up.near(srv, items, &by);
-                let list: Vec<String> = items.iter().map(|n| format!("{} {}%{}", n.city, n.pct, n.tr)).collect();
-                log(&format!("[올리기] {srv} 인근 {good}: {} · 등록자 {by} → {}", list.join(", "), to.as_deref().unwrap_or("못 올림")));
+                let list: Vec<String> = items
+                    .iter()
+                    .map(|n| format!("{} {}%{}", n.city, n.pct, n.tr))
+                    .collect();
+                log(&format!(
+                    "[올리기] {srv} 인근 {good}: {} · 등록자 {by} → {}",
+                    list.join(", "),
+                    to.as_deref().unwrap_or("못 올림")
+                ));
                 d["by"] = json!(by);
                 d["uploaded"] = json!(to);
             }
             if let (Event::News { city: nc, texts }, Some(srv)) = (ev, &net.server) {
                 let n = up.news(srv, nc, texts);
-                log(&format!("[소식] {srv} {nc}: {} · {}", texts.join(" / "), if n > 0 { format!("{n}건 올림") } else { "이미 올린 대사".into() }));
+                log(&format!(
+                    "[소식] {srv} {nc}: {} · {}",
+                    texts.join(" / "),
+                    if n > 0 {
+                        format!("{n}건 올림")
+                    } else {
+                        "이미 올린 대사".into()
+                    }
+                ));
                 d["uploaded"] = json!(n);
             }
-            if let (Event::Nanban { culture, city: nc, kind, pts, raw, states, .. }, Some(srv)) = (ev, &net.server) {
+            if let (
+                Event::Nanban {
+                    culture,
+                    city: nc,
+                    kind,
+                    pts,
+                    raw,
+                    states,
+                    ..
+                },
+                Some(srv),
+            ) = (ev, &net.server)
+            {
                 // 반올림 전 틱 (교환비 연구용): "소수 11.3 10.9 …"
-                let raw_txt = raw.map(|r| format!(" · 소수 {}", r.iter().map(|x| format!("{x:.1}")).collect::<Vec<_>>().join(" "))).unwrap_or_default();
+                let raw_txt = raw
+                    .map(|r| {
+                        format!(
+                            " · 소수 {}",
+                            r.iter()
+                                .map(|x| format!("{x:.1}"))
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                        )
+                    })
+                    .unwrap_or_default();
                 // 1.0.10: 공유 서버에는 소수 틱 (못 읽었으면 정수)
                 let vals: Option<Vec<f32>> = pts.map(|p| match raw {
                     Some(r) => r.iter().map(|x| x.clamp(0.0, 100.0)).collect(),
@@ -918,13 +1477,22 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                     _ => None,
                 };
                 if let Some((to, sent, cat_sent)) = up.nanban(srv, states, cat, &by) {
-                    let st_txt: Vec<String> = sent.iter().map(|(c, v)| format!("{c} {v}")).collect();
-                    let st_txt = if st_txt.is_empty() { String::new() } else { format!(" · 상태 {}", st_txt.join(", ")) };
+                    let st_txt: Vec<String> =
+                        sent.iter().map(|(c, v)| format!("{c} {v}")).collect();
+                    let st_txt = if st_txt.is_empty() {
+                        String::new()
+                    } else {
+                        format!(" · 상태 {}", st_txt.join(", "))
+                    };
                     match (cat_sent, cat) {
                         (true, Some((c, k, _))) => {
                             let p = pts.unwrap_or_default();
                             let pts: Vec<String> = p.iter().map(|x| x.to_string()).collect();
-                            log(&format!("[남만] {to} {culture} {c} {k} {}틱 · {}{raw_txt}{st_txt} · 등록자 {by}", p[p.len() - 1], pts.join(" ")));
+                            log(&format!(
+                                "[남만] {to} {culture} {c} {k} {}틱 · {}{raw_txt}{st_txt} · 등록자 {by}",
+                                p[p.len() - 1],
+                                pts.join(" ")
+                            ));
                         }
                         _ => log(&format!("[남만] {to} {culture}{st_txt} · 등록자 {by}")),
                     }
@@ -932,9 +1500,23 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
                     d["by"] = json!(by);
                 }
             }
-            if let (Event::Trade { city: Some(tc), rows, .. }, Some(srv), true) = (ev, &net.server, d["ready"] == true) {
+            if let (
+                Event::Trade {
+                    city: Some(tc),
+                    rows,
+                    ..
+                },
+                Some(srv),
+                true,
+            ) = (ev, &net.server, d["ready"] == true)
+            {
                 let to = up.trade(srv, tc, rows, &by);
-                log(&format!("[올리기] {} {tc} {}종 · 등록자 {by} → {}", srv, rows.len(), to.as_deref().unwrap_or("못 올림")));
+                log(&format!(
+                    "[올리기] {} {tc} {}종 · 등록자 {by} → {}",
+                    srv,
+                    rows.len(),
+                    to.as_deref().unwrap_or("못 올림")
+                ));
                 d["by"] = json!(by);
                 d["uploaded"] = json!(to);
             }
@@ -962,6 +1544,9 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
     if let Some(c) = cap {
         c.stop();
     }
+    if let Some((_, c, _)) = nav_cap {
+        c.stop();
+    }
 }
 
 // ---------- 점검: 그림 파일로 읽어 보기 ----------
@@ -971,7 +1556,10 @@ fn file_test(paths: &[String]) {
     let mut rd = Reader::new(recognizer(None));
     let mut t = now();
     for p in paths {
-        let Some(rgb) = std::fs::read(p).ok().and_then(|b| recog::pngio::load_rgb(&b)) else {
+        let Some(rgb) = std::fs::read(p)
+            .ok()
+            .and_then(|b| recog::pngio::load_rgb(&b))
+        else {
             println!("{p}: 읽기 실패 (PNG만)");
             continue;
         };
@@ -983,7 +1571,10 @@ fn file_test(paths: &[String]) {
                 println!("  {l}");
             }
             for e in &evs {
-                println!("{p}: 교역창 {open} · {}", event_json(e, &Some("시험".into())));
+                println!(
+                    "{p}: 교역창 {open} · {}",
+                    event_json(e, &Some("시험".into()))
+                );
             }
         }
     }
@@ -1001,9 +1592,15 @@ fn hud_test() {
     let steps: Vec<(u64, Value)> = vec![
         (1500, json!({ "kind": "server", "server": "헬레네" })),
         (3000, json!({ "kind": "city", "city": "리스본" })),
-        (3500, json!({ "kind": "trade", "type": "sell", "server": "헬레네", "city": "리스본", "ready": true, "why": null,
-            "rows": [{"name":"브랜디","price":360,"pct":110,"tr":"↘"},{"name":"수정","price":731,"pct":108,"tr":"↗"}] })),
-        (7000, json!({ "kind": "trade", "type": "market", "server": null, "city": "리스본", "ready": false, "why": "서버를 모름", "rows": [] })),
+        (
+            3500,
+            json!({ "kind": "trade", "type": "sell", "server": "헬레네", "city": "리스본", "ready": true, "why": null,
+            "rows": [{"name":"브랜디","price":360,"pct":110,"tr":"↘"},{"name":"수정","price":731,"pct":108,"tr":"↗"}] }),
+        ),
+        (
+            7000,
+            json!({ "kind": "trade", "type": "market", "server": null, "city": "리스본", "ready": false, "why": "서버를 모름", "rows": [] }),
+        ),
     ];
     let mut city = None;
     for (wait, d) in steps {
@@ -1011,16 +1608,27 @@ fn hud_test() {
         if d["kind"] == "city" {
             city = d["city"].as_str().map(String::from);
         }
-        let srv = if d["kind"] == "trade" && d["server"].is_null() { None } else { Some("헬레네".to_string()) };
+        let srv = if d["kind"] == "trade" && d["server"].is_null() {
+            None
+        } else {
+            Some("헬레네".to_string())
+        };
         h.set_status(status_parts(&srv, true, &city));
         hud_say(&h, &d);
         println!("{d}");
     }
     // 0.10.0 남만: '재고 인식' 알림 + 틱 HUD (남만 창이 (300,150)에 있다고 치고 98틱 → 19틱)
-    hud_say(&h, &json!({ "kind": "nanban", "ready": true, "seen": true, "city": "안평", "cat": "식료품" }));
+    hud_say(
+        &h,
+        &json!({ "kind": "nanban", "ready": true, "seen": true, "city": "안평", "cat": "식료품" }),
+    );
     for i in 0..50 {
         let v: u8 = if i < 25 { 98 } else { 19 };
-        h.set_tick(Some((300 + recog::nanban::WIN_W + 10, 150 + recog::nanban::tick_y(v), v as f32 + 0.3)));
+        h.set_tick(Some((
+            300 + recog::nanban::WIN_W + 10,
+            150 + recog::nanban::tick_y(v),
+            v as f32 + 0.3,
+        )));
         std::thread::sleep(Duration::from_millis(100));
     }
     std::thread::sleep(Duration::from_millis(2000));
@@ -1033,14 +1641,27 @@ fn upload_test(dir: Option<PathBuf>) {
         return;
     };
     let mut up = upload::Uploader::new(dir.as_ref());
-    let row = reader::Row { name: "브랜디".into(), price: 360, pct: recog::Pct::Num(110), tr: "↘", arrow: None };
+    let row = reader::Row {
+        name: "브랜디".into(),
+        price: 360,
+        pct: recog::Pct::Num(110),
+        tr: "↘",
+        arrow: None,
+    };
     let to = up.trade("헬레네", "리스본", &[row], "모듈시험");
     eprintln!("보냄 → {to:?}");
     std::thread::sleep(Duration::from_secs(6));
-    let Some(cfg) = config::read_config() else { return };
+    let Some(cfg) = config::read_config() else {
+        return;
+    };
     let auth = dir.unwrap_or_else(std::env::temp_dir).join("fb_auth.json");
     let cl = cloud::Cloud::start(&cfg.api_key, &cfg.database_url, auth);
-    match cl.get(&format!("servers/{}/cities/{}/prices/{}/sell", cloud::fkey(test), cloud::fkey("리스본"), cloud::fkey("브랜디"))) {
+    match cl.get(&format!(
+        "servers/{}/cities/{}/prices/{}/sell",
+        cloud::fkey(test),
+        cloud::fkey("리스본"),
+        cloud::fkey("브랜디")
+    )) {
         Ok(v) => eprintln!("다시 읽음: {v}"),
         Err(e) => eprintln!("다시 읽기 실패: {e}"),
     }
@@ -1056,7 +1677,11 @@ fn main() {
     // `price-side --ask-test [미리 채울 이름]` : 이름 입력 창만 띄워 보고 답을 적는다 (게임 창이 있으면 그 가운데)
     if args.get(1).map(String::as_str) == Some("--ask-test") {
         let g = capture::find_game_windows().first().copied().unwrap_or(0);
-        let h = ask::open(g, args.get(2).cloned().unwrap_or_default(), "화면에서 읽은 이름을 채워 두었습니다. 맞으면 Enter 를 누르세요.".into());
+        let h = ask::open(
+            g,
+            args.get(2).cloned().unwrap_or_default(),
+            "화면에서 읽은 이름을 채워 두었습니다. 맞으면 Enter 를 누르세요.".into(),
+        );
         while h.lock().unwrap().is_none() {
             std::thread::sleep(Duration::from_millis(100));
         }
@@ -1074,6 +1699,8 @@ fn main() {
     }
     let data = std::env::var_os("DHO_SIDECAR_DATA_DIR").map(PathBuf::from);
     let _ = LOG_PATH.set(data.as_ref().map(|d| d.join("side-log.txt")));
+    // 1.0.14: panic = abort 라 오류가 나면 기록 없이 꺼졌다 (다른 PC 00:17:34). 꺼지기 전에 어디서 났는지 남긴다
+    std::panic::set_hook(Box::new(|i| log(&format!("[오류] 모듈이 멈춤 · {i}"))));
     capture::set_log(log);
     netaddr::set_log(log);
 
@@ -1091,38 +1718,76 @@ fn main() {
         }
         None
     };
-    let Some(hello) = next(&mut lines) else { return };
+    let Some(hello) = next(&mut lines) else {
+        return;
+    };
     if hello["t"] != "hello" {
         std::process::exit(2);
     }
-    log(&format!("[시작] 시세 sidecar {} · Navigator {}", env!("CARGO_PKG_VERSION"), hello["navigatorVersion"].as_str().unwrap_or("?")));
+    log(&format!(
+        "[시작] 시세 sidecar {} · Navigator {}",
+        env!("CARGO_PKG_VERSION"),
+        hello["navigatorVersion"].as_str().unwrap_or("?")
+    ));
     set_name(&hello["input"]["character"]);
     set_hud_off(&hello["input"]["hudOff"]);
     hud::set_pos(pos_of(&hello["input"]["hudPos"]), false);
     write_line(&json!({ "t": "ready" }));
-    emit(None, json!({ "kind": "ready", "version": env!("CARGO_PKG_VERSION") }));
+    emit(
+        None,
+        json!({ "kind": "ready", "version": env!("CARGO_PKG_VERSION") }),
+    );
+    name_file_init(&data);
+    emit_names(&data);
 
     let target: Arc<Mutex<Option<Target>>> = Arc::new(Mutex::new(None));
+    // 1.0.13: 측량 원본 클라이언트 (웹 지도 네비 좌표는 이 창에서 따로 읽는다)
+    let survey: Arc<Mutex<Option<Target>>> = Arc::new(Mutex::new(None));
     let stop = Arc::new(AtomicBool::new(false));
     let w = {
-        let (target, stop, data) = (target.clone(), stop.clone(), data.clone());
-        std::thread::spawn(move || worker(target, data, stop))
+        let (target, survey, stop, data) =
+            (target.clone(), survey.clone(), stop.clone(), data.clone());
+        std::thread::spawn(move || worker(target, survey, data, stop))
     };
     while let Some(line) = next(&mut lines) {
         match line["t"].as_str() {
             Some("target") => {
                 let mut g = target.lock().unwrap();
+                // 1.0.13: 최소화된 창은 복사가 안 되므로 살아 있지 않은 것으로 본다
                 let tg = parse_target(&line, g.as_ref(), |h| unsafe {
-                    windows::Win32::UI::WindowsAndMessaging::IsWindow(windows::Win32::Foundation::HWND(h as _)).as_bool()
+                    use windows::Win32::UI::WindowsAndMessaging::{IsIconic, IsWindow};
+                    let w = windows::Win32::Foundation::HWND(h as _);
+                    IsWindow(w).as_bool() && !IsIconic(w).as_bool()
                 });
-                if tg.as_ref().map(|t| (t.hwnd, t.pid, t.generation)) != g.as_ref().map(|t| (t.hwnd, t.pid, t.generation)) {
+                if tg.as_ref().map(|t| (t.hwnd, t.pid, t.generation))
+                    != g.as_ref().map(|t| (t.hwnd, t.pid, t.generation))
+                {
+                    // 1.0.13: Navigator 가 준 목록도 짧게 남긴다 (다른 PC 문제를 기록으로 볼 수 있게)
+                    let v = |r: &str| match line[r]["hwnd"].as_str() {
+                        Some(h) => format!(
+                            "{r} {h}{}",
+                            if line[r]["active"].as_bool() == Some(true) {
+                                " 활성"
+                            } else {
+                                ""
+                            }
+                        ),
+                        None => format!("{r} 없음"),
+                    };
                     let msg = match &tg {
-                        Some(t) => format!("[대상] {} 세대 {} · pid {}", t.role, t.generation, if t.pid != 0 { "있음" } else { "없음" }),
+                        Some(t) => format!(
+                            "[대상] {} 세대 {} · 창 {:#X} · pid {}",
+                            t.role,
+                            t.generation,
+                            t.hwnd,
+                            if t.pid != 0 { "있음" } else { "없음" }
+                        ),
                         None => "[대상] 없음".into(),
                     };
-                    log(&msg);
+                    log(&format!("{msg} ({}, {})", v("hud"), v("survey")));
                 }
                 *g = tg;
+                *survey.lock().unwrap() = view_target(&line, "survey");
             }
             Some("message") => {
                 if line["data"]["kind"] == "character" {
@@ -1135,10 +1800,26 @@ fn main() {
                     *UPDATE_V.lock().unwrap() = line["data"]["v"].as_str().map(String::from);
                 } else if line["data"]["kind"] == "open-site" {
                     open_site(line["data"]["page"] == "install");
+                } else if line["data"]["kind"] == "names-set" {
+                    // 1.0.14: 패널 '캐릭터 이름 재지정' → 캐릭터이름.txt 를 그 목록으로 바꾸고 다시 확인
+                    let names = names_from(&line["data"]["names"]);
+                    let ok = name_file_write(&data, &names);
+                    log(&format!(
+                        "[등록자] 패널에서 이름 목록 저장 {} · {}",
+                        if names.is_empty() { "(없음)".into() } else { names.join(", ") },
+                        if ok { "저장함" } else { "저장 못 함" }
+                    ));
+                    NAMES_RECHECK.store(true, Ordering::SeqCst);
+                    emit_names(&data);
+                } else if line["data"]["kind"] == "names-get" {
+                    emit_names(&data);
                 }
             }
             Some("stop") => {
-                log(&format!("[종료] {}", line["reason"].as_str().unwrap_or("?")));
+                log(&format!(
+                    "[종료] {}",
+                    line["reason"].as_str().unwrap_or("?")
+                ));
                 break;
             }
             _ => {}
@@ -1165,16 +1846,29 @@ mod target_tests {
         // hud 활성 → hud
         let yes = |_| true;
         let l = json!({ "t": "target", "hud": view("0x10", true), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
-        assert_eq!(parse_target(&l, None, yes).map(|t| (t.role, t.hwnd, t.generation)), Some(("hud".into(), 0x10, 3)));
+        assert_eq!(
+            parse_target(&l, None, yes).map(|t| (t.role, t.hwnd, t.generation)),
+            Some(("hud".into(), 0x10, 3))
+        );
         // hud 비활성, survey 활성 → survey
         let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
         let sv = parse_target(&l, None, yes);
-        assert_eq!(sv.clone().map(|t| (t.role, t.hwnd)), Some(("survey".into(), 0x20)));
+        assert_eq!(
+            sv.clone().map(|t| (t.role, t.hwnd)),
+            Some(("survey".into(), 0x20))
+        );
         // 처음부터 둘 다 비활성 → 없음 (preferred 가 있어도)
         let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": null, "surveyGeneration": 5, "preferred": "hud" });
         assert!(parse_target(&l, None, yes).is_none());
         // 둘 다 없음
-        assert!(parse_target(&json!({ "t": "target", "hud": null, "survey": null, "preferred": null }), None, yes).is_none());
+        assert!(
+            parse_target(
+                &json!({ "t": "target", "hud": null, "survey": null, "preferred": null }),
+                None,
+                yes
+            )
+            .is_none()
+        );
     }
 
     #[test]
@@ -1191,11 +1885,35 @@ mod target_tests {
         assert_eq!(parse_target(&e, Some(&b), yes), Some(b.clone()));
         // 창이 닫힘 → 없음
         assert!(parse_target(&e, Some(&b), |_| false).is_none());
-        // 마지막 창이 목록에서 빠지고 다른 비활성 창만 있음 → 없음
+        // 1.0.13: 마지막 창이 목록에서 빠지고 다른 비활성 창만 있어도, 창이 살아 있으면 그대로 (HUD 잠깐 떨어짐·다른 클라이언트 survey)
         let l = json!({ "t": "target", "hud": view("0x30", false), "hudGeneration": 6, "survey": null });
-        assert!(parse_target(&l, Some(&b), yes).is_none());
+        assert_eq!(parse_target(&l, Some(&b), yes), Some(b.clone()));
+        // 최소화·닫힘이면 없음
+        assert!(parse_target(&l, Some(&b), |_| false).is_none());
         // 다른 창이 활성이 되면 그 창으로
         let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 4, "survey": view("0x20", true), "surveyGeneration": 5 });
         assert_eq!(parse_target(&l, Some(&b), yes).map(|t| t.hwnd), Some(0x20));
+    }
+}
+
+#[cfg(test)]
+mod name_tests {
+    use super::{names_from, plausible};
+    use serde_json::json;
+
+    #[test]
+    fn garbled_name_is_not_plausible() {
+        // 1.0.14: 이름 칸이 깨져 읽힌 글자는 다른 캐릭터로 치지 않는다
+        assert!(!plausible("합크님5이"));
+        assert!(!plausible("까h닙f이"));
+        assert!(plausible("다크냥이"));
+        assert!(plausible("타이거낭이"));
+    }
+
+    #[test]
+    fn panel_names_are_cleaned() {
+        let v = json!(["다크냥이", " 암흑냥이 ", "다크냥이", "", "a/b", 3]);
+        assert_eq!(names_from(&v), vec!["다크냥이", "암흑냥이"]);
+        assert!(names_from(&json!(null)).is_empty());
     }
 }

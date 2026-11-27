@@ -50,11 +50,19 @@ pub struct Part {
 }
 
 pub fn p(text: impl Into<String>, color: u32) -> Part {
-    Part { text: text.into(), color, bold: false }
+    Part {
+        text: text.into(),
+        color,
+        bold: false,
+    }
 }
 
 pub fn pb(text: impl Into<String>, color: u32) -> Part {
-    Part { text: text.into(), color, bold: true }
+    Part {
+        text: text.into(),
+        color,
+        bold: true,
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -96,13 +104,19 @@ static TICK_TEXT: Mutex<String> = Mutex::new(String::new());
 pub struct Hud(Arc<Mutex<State>>);
 
 fn now() -> f64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0.0, |d| d.as_secs_f64())
 }
 
 impl Hud {
     /// HUD 창을 따로 도는 스레드에서 만든다
     pub fn start(force: bool) -> Hud {
-        let h = Hud(Arc::new(Mutex::new(State { force, sea: true, ..Default::default() })));
+        let h = Hud(Arc::new(Mutex::new(State {
+            force,
+            sea: true,
+            ..Default::default()
+        })));
         let st = h.0.clone();
         std::thread::spawn(move || run(st));
         h
@@ -206,7 +220,11 @@ fn font(px: i32, bold: bool) -> HFONT {
             0,
             0,
             0,
-            if bold { FW_BOLD.0 as i32 } else { FW_NORMAL.0 as i32 },
+            if bold {
+                FW_BOLD.0 as i32
+            } else {
+                FW_NORMAL.0 as i32
+            },
             0,
             0,
             0,
@@ -232,7 +250,10 @@ struct Fonts {
 
 impl Fonts {
     fn new(dpi: u32) -> Self {
-        Fonts { small: (font(pt(8.0, dpi), false), font(pt(8.0, dpi), true)), big: (font(pt(9.0, dpi), false), font(pt(9.0, dpi), true)) }
+        Fonts {
+            small: (font(pt(8.0, dpi), false), font(pt(8.0, dpi), true)),
+            big: (font(pt(9.0, dpi), false), font(pt(9.0, dpi), true)),
+        }
     }
     fn get(&self, big: bool, bold: bool) -> HFONT {
         let f = if big { self.big } else { self.small };
@@ -255,7 +276,12 @@ fn text_size(dc: HDC, f: HFONT, s: &str) -> (i32, i32) {
     let mut r = RECT::default();
     unsafe {
         let old = SelectObject(dc, f);
-        DrawTextW(dc, &mut v, &mut r, DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
+        DrawTextW(
+            dc,
+            &mut v,
+            &mut r,
+            DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX,
+        );
         SelectObject(dc, old);
     }
     (r.right - r.left, r.bottom - r.top)
@@ -278,7 +304,9 @@ fn row_sizes(dc: HDC, fonts: &Fonts, v: &View) -> Vec<(i32, i32)> {
 }
 
 fn paint(dc: HDC, rc: RECT) {
-    let Some(v) = VIEW.lock().unwrap().clone() else { return };
+    let Some(v) = VIEW.lock().unwrap().clone() else {
+        return;
+    };
     let fonts = Fonts::new(v.dpi);
     unsafe {
         let key = CreateSolidBrush(rgb(KEY));
@@ -291,7 +319,12 @@ fn paint(dc: HDC, rc: RECT) {
         let mut y = 0;
         for ((parts, big), (w, h)) in v.rows.iter().zip(sizes) {
             let x0 = (width - w) / 2;
-            let band = RECT { left: x0, top: y, right: x0 + w, bottom: y + h };
+            let band = RECT {
+                left: x0,
+                top: y,
+                right: x0 + w,
+                bottom: y + h,
+            };
             FillRect(dc, &band, bg);
             // Navigator 카드처럼 1px 각진 테두리 (알림 줄은 더 밝은 금색)
             let edge = CreateSolidBrush(rgb(if *big { EDGE_HI } else { EDGE }));
@@ -304,7 +337,12 @@ fn paint(dc: HDC, rc: RECT) {
                 let old = SelectObject(dc, f);
                 SetTextColor(dc, rgb(pt.color));
                 let mut s: Vec<u16> = pt.text.encode_utf16().collect();
-                let mut r = RECT { left: x, top: y + PADY, right: x + tw + 2, bottom: y + h };
+                let mut r = RECT {
+                    left: x,
+                    top: y + PADY,
+                    right: x + tw + 2,
+                    bottom: y + h,
+                };
                 DrawTextW(dc, &mut s, &mut r, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
                 SelectObject(dc, old);
                 x += tw;
@@ -335,11 +373,28 @@ unsafe extern "system" fn proc_(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LR
 }
 
 /// 틱 HUD 글자 배치: '재고' · 숫자 · '틱' 을 아래 줄을 맞춰 나란히. draw 마다 (글자, 글꼴, 색, x, 아래 y), 창 크기를 돌려준다 (감지기 ui.rs 와 같음)
-fn tick_layout(dc: HDC, dpi: u32, num: &str, mut draw: impl FnMut(&str, HFONT, u32, i32, i32)) -> (i32, i32) {
-    let parts: [(&str, f64, u32); 3] = [("재고", 10.5 * TICK_SCALE, TICK_MUTED), (num, 24.0 * TICK_SCALE, TICK_GOLD), ("틱", 14.0 * TICK_SCALE, FG)];
+fn tick_layout(
+    dc: HDC,
+    dpi: u32,
+    num: &str,
+    mut draw: impl FnMut(&str, HFONT, u32, i32, i32),
+) -> (i32, i32) {
+    let parts: [(&str, f64, u32); 3] = [
+        ("재고", 10.5 * TICK_SCALE, TICK_MUTED),
+        (num, 24.0 * TICK_SCALE, TICK_GOLD),
+        ("틱", 14.0 * TICK_SCALE, FG),
+    ];
     let fonts: Vec<HFONT> = parts.iter().map(|p| font(pt(p.1, dpi), true)).collect();
-    let sizes: Vec<(i32, i32)> = parts.iter().zip(&fonts).map(|(p, f)| text_size(dc, *f, p.0)).collect();
-    let (padx, pady, gap) = (pt(10.0 * TICK_SCALE, dpi), pt(3.0 * TICK_SCALE, dpi), pt(4.0 * TICK_SCALE, dpi));
+    let sizes: Vec<(i32, i32)> = parts
+        .iter()
+        .zip(&fonts)
+        .map(|(p, f)| text_size(dc, *f, p.0))
+        .collect();
+    let (padx, pady, gap) = (
+        pt(10.0 * TICK_SCALE, dpi),
+        pt(3.0 * TICK_SCALE, dpi),
+        pt(4.0 * TICK_SCALE, dpi),
+    );
     let hmax = sizes.iter().map(|s| s.1).max().unwrap_or(0);
     let mut x = padx;
     for (i, (p, f)) in parts.iter().zip(&fonts).enumerate() {
@@ -364,7 +419,12 @@ fn paint_tick(h: HWND, dc: HDC, rc: RECT) {
         let _ = DeleteObject(gold);
         let dpi = GetDpiForWindow(h).max(96);
         let b = (dpi as i32 * 2 + 95) / 96;
-        let inner = RECT { left: rc.left + b, top: rc.top + b, right: rc.right - b, bottom: rc.bottom - b };
+        let inner = RECT {
+            left: rc.left + b,
+            top: rc.top + b,
+            right: rc.right - b,
+            bottom: rc.bottom - b,
+        };
         let br = CreateSolidBrush(rgb(BG));
         FillRect(dc, &inner, br);
         let _ = DeleteObject(br);
@@ -381,8 +441,18 @@ fn paint_tick(h: HWND, dc: HDC, rc: RECT) {
             let old = SelectObject(dc, f);
             SetTextColor(dc, rgb(c));
             let mut v: Vec<u16> = s.encode_utf16().collect();
-            let mut r = RECT { left: x, top: 0, right: x + 400, bottom };
-            DrawTextW(dc, &mut v, &mut r, DT_SINGLELINE | DT_BOTTOM | DT_NOPREFIX | DT_NOCLIP);
+            let mut r = RECT {
+                left: x,
+                top: 0,
+                right: x + 400,
+                bottom,
+            };
+            DrawTextW(
+                dc,
+                &mut v,
+                &mut r,
+                DT_SINGLELINE | DT_BOTTOM | DT_NOPREFIX | DT_NOCLIP,
+            );
             SelectObject(dc, old);
         });
     }
@@ -408,7 +478,11 @@ unsafe extern "system" fn tick_proc(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -
 }
 
 /// 틱 HUD: 방금 읽었고 그 게임 창이 맨 앞일 때만, 창이 움직여도 따라간다
-fn tick_window(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(String, (i32, i32, i32, i32))>) {
+fn tick_window(
+    st: &Arc<Mutex<State>>,
+    wnd: HWND,
+    shown: &mut Option<(String, (i32, i32, i32, i32))>,
+) {
     let t = now();
     let (game, force, tick) = {
         let s = st.lock().unwrap();
@@ -416,7 +490,10 @@ fn tick_window(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(String, (i
     };
     let show = match (game, tick) {
         (Some(g), Some((x, y, v, at)))
-            if t - at <= TICK_FRESH_SEC && capture::is_window(g) && !capture::is_minimized(g) && (force || capture::foreground() == g) =>
+            if t - at <= TICK_FRESH_SEC
+                && capture::is_window(g)
+                && !capture::is_minimized(g)
+                && (force || capture::foreground() == g) =>
         {
             Some((g, x, y, v))
         }
@@ -441,15 +518,34 @@ fn tick_window(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(String, (i
     };
     let (fl, ft, _, _) = capture::frame_rect(g); // 캡처 화면 (0,0) = 바깥 테두리 왼쪽 위
     let rect = (fl + x as i32, ft + y as i32 - h / 2, w, h);
-    if shown.as_ref().is_some_and(|(n, rc)| *n == num && *rc == rect) {
+    if shown
+        .as_ref()
+        .is_some_and(|(n, rc)| *n == num && *rc == rect)
+    {
         unsafe {
-            let _ = SetWindowPos(wnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                wnd,
+                HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
         return;
     }
     *TICK_TEXT.lock().unwrap() = num.clone();
     unsafe {
-        let _ = SetWindowPos(wnd, HWND_TOPMOST, rect.0, rect.1, rect.2, rect.3, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        let _ = SetWindowPos(
+            wnd,
+            HWND_TOPMOST,
+            rect.0,
+            rect.1,
+            rect.2,
+            rect.3,
+            SWP_NOACTIVATE | SWP_SHOWWINDOW,
+        );
         let _ = InvalidateRect(wnd, None, TRUE);
     }
     *shown = Some((num, rect));
@@ -457,7 +553,9 @@ fn tick_window(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(String, (i
 
 fn run(st: Arc<Mutex<State>>) {
     let tick_wnd = unsafe {
-        let inst = GetModuleHandleW(None).map(|m| HINSTANCE(m.0)).unwrap_or_default();
+        let inst = GetModuleHandleW(None)
+            .map(|m| HINSTANCE(m.0))
+            .unwrap_or_default();
         let wc = WNDCLASSEXW {
             cbSize: size_of::<WNDCLASSEXW>() as u32,
             lpfnWndProc: Some(tick_proc),
@@ -484,12 +582,19 @@ fn run(st: Arc<Mutex<State>>) {
     };
     if let Some(h) = tick_wnd {
         unsafe {
-            let _ = SetLayeredWindowAttributes(h, COLORREF(0), (TICK_ALPHA * 255.0).round() as u8, LWA_ALPHA);
+            let _ = SetLayeredWindowAttributes(
+                h,
+                COLORREF(0),
+                (TICK_ALPHA * 255.0).round() as u8,
+                LWA_ALPHA,
+            );
         }
     }
     let mut tick_shown: Option<(String, (i32, i32, i32, i32))> = None;
     let wnd = unsafe {
-        let inst = GetModuleHandleW(None).map(|m| HINSTANCE(m.0)).unwrap_or_default();
+        let inst = GetModuleHandleW(None)
+            .map(|m| HINSTANCE(m.0))
+            .unwrap_or_default();
         let wc = WNDCLASSEXW {
             cbSize: size_of::<WNDCLASSEXW>() as u32,
             lpfnWndProc: Some(proc_),
@@ -513,7 +618,12 @@ fn run(st: Arc<Mutex<State>>) {
             None,
         );
         let Ok(h) = h else { return };
-        let _ = SetLayeredWindowAttributes(h, rgb(KEY), (ALPHA * 255.0).round() as u8, LWA_ALPHA | LWA_COLORKEY);
+        let _ = SetLayeredWindowAttributes(
+            h,
+            rgb(KEY),
+            (ALPHA * 255.0).round() as u8,
+            LWA_ALPHA | LWA_COLORKEY,
+        );
         SetTimer(h, 1, 100, None);
         h
     };
@@ -562,7 +672,10 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         (s.game, s.force, rows)
     };
     let visible = game.is_some_and(|g| {
-        capture::is_window(g) && !capture::is_minimized(g) && (force || capture::foreground() == g || t < *PREVIEW_UNTIL.lock().unwrap()) && !rows.is_empty()
+        capture::is_window(g)
+            && !capture::is_minimized(g)
+            && (force || capture::foreground() == g || t < *PREVIEW_UNTIL.lock().unwrap())
+            && !rows.is_empty()
     });
     let Some(g) = game.filter(|_| visible) else {
         if shown.take().is_some() {
@@ -590,20 +703,44 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         Some((fx, fy)) => {
             let x = l + ((r - l) as f64 * fx).round() as i32 - w / 2;
             let y = top + ((bottom - top) as f64 * fy).round() as i32;
-            (x.clamp(l, (r - w).max(l)), y.clamp(top, (bottom - h).max(top)), w, h)
+            (
+                x.clamp(l, (r - w).max(l)),
+                y.clamp(top, (bottom - h).max(top)),
+                w,
+                h,
+            )
         }
         None => (l + (r - l - w) / 2, top + off, w, h),
     };
-    if shown.as_ref().is_some_and(|(v, rc)| *v == view && *rc == rect) {
+    if shown
+        .as_ref()
+        .is_some_and(|(v, rc)| *v == view && *rc == rect)
+    {
         // 같은 내용이어도 맨 위는 지킨다 (게임 창을 눌렀을 때 밑으로 가지 않게)
         unsafe {
-            let _ = SetWindowPos(wnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            let _ = SetWindowPos(
+                wnd,
+                HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            );
         }
         return;
     }
     *VIEW.lock().unwrap() = Some(view.clone());
     unsafe {
-        let _ = SetWindowPos(wnd, HWND_TOPMOST, rect.0, rect.1, rect.2, rect.3, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        let _ = SetWindowPos(
+            wnd,
+            HWND_TOPMOST,
+            rect.0,
+            rect.1,
+            rect.2,
+            rect.3,
+            SWP_NOACTIVATE | SWP_SHOWWINDOW,
+        );
         let _ = InvalidateRect(wnd, None, TRUE);
     }
     *shown = Some((view, rect));

@@ -69,7 +69,12 @@ static FOCUS: AtomicBool = AtomicBool::new(false);
 static BRUSH_BG: AtomicIsize = AtomicIsize::new(0);
 static BRUSH_FIELD: AtomicIsize = AtomicIsize::new(0);
 /// 입력 칸 둘레 상자 (창 안 좌표)
-static FRAME: Mutex<RECT> = Mutex::new(RECT { left: 0, top: 0, right: 0, bottom: 0 });
+static FRAME: Mutex<RECT> = Mutex::new(RECT {
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+});
 
 fn rgb(c: u32) -> COLORREF {
     COLORREF(((c & 0xff) << 16) | (c & 0xff00) | ((c >> 16) & 0xff))
@@ -101,7 +106,8 @@ fn answer(a: Answer) {
 fn visual_styles() {
     unsafe {
         let mut dir = [0u16; 260];
-        let n = windows::Win32::System::SystemInformation::GetSystemDirectoryW(Some(&mut dir)) as usize;
+        let n =
+            windows::Win32::System::SystemInformation::GetSystemDirectoryW(Some(&mut dir)) as usize;
         let dir = String::from_utf16_lossy(&dir[..n]);
         let src = HSTRING::from(format!("{dir}\\shell32.dll"));
         let d = HSTRING::from(dir);
@@ -130,7 +136,9 @@ fn run(game: isize, prefill: &str, why: &str, h: Handle) {
         let field = CreateSolidBrush(rgb(C_FIELD));
         BRUSH_BG.store(bg.0 as isize, SeqCst);
         BRUSH_FIELD.store(field.0 as isize, SeqCst);
-        let inst = GetModuleHandleW(None).map(|m| HINSTANCE(m.0)).unwrap_or_default();
+        let inst = GetModuleHandleW(None)
+            .map(|m| HINSTANCE(m.0))
+            .unwrap_or_default();
         let wc = WNDCLASSEXW {
             cbSize: size_of::<WNDCLASSEXW>() as u32,
             lpfnWndProc: Some(proc_),
@@ -143,19 +151,38 @@ fn run(game: isize, prefill: &str, why: &str, h: Handle) {
         RegisterClassExW(&wc);
         let g = capture::hwnd(game);
         let alive = game != 0 && capture::is_window(game);
-        let dpi = if alive { GetDpiForWindow(g) } else { GetDpiForSystem() }.max(96) as i32;
+        let dpi = if alive {
+            GetDpiForWindow(g)
+        } else {
+            GetDpiForSystem()
+        }
+        .max(96) as i32;
         let s = |v: i32| v * dpi / 96;
         let (cw, ch) = (s(420), s(220));
         // 바깥 틀 크기
         let style = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
-        let mut rc = RECT { left: 0, top: 0, right: cw, bottom: ch };
-        let _ = windows::Win32::UI::HiDpi::AdjustWindowRectExForDpi(&mut rc, style, false, WS_EX_TOPMOST | WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME, dpi as u32);
+        let mut rc = RECT {
+            left: 0,
+            top: 0,
+            right: cw,
+            bottom: ch,
+        };
+        let _ = windows::Win32::UI::HiDpi::AdjustWindowRectExForDpi(
+            &mut rc,
+            style,
+            false,
+            WS_EX_TOPMOST | WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME,
+            dpi as u32,
+        );
         let (ww, wh) = (rc.right - rc.left, rc.bottom - rc.top);
         let (x, y) = if alive {
             let (l, t, r, b) = capture::client_rect_screen(game);
             (l + (r - l - ww) / 2, t + (b - t - wh) / 2)
         } else {
-            ((GetSystemMetrics(SM_CXSCREEN) - ww) / 2, (GetSystemMetrics(SM_CYSCREEN) - wh) / 2)
+            (
+                (GetSystemMetrics(SM_CXSCREEN) - ww) / 2,
+                (GetSystemMetrics(SM_CYSCREEN) - wh) / 2,
+            )
         };
         let Ok(wnd) = CreateWindowExW(
             WS_EX_TOPMOST | WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME,
@@ -174,12 +201,53 @@ fn run(game: isize, prefill: &str, why: &str, h: Handle) {
             return;
         };
         // 제목 줄도 Navigator 처럼: 남색 바탕, 따뜻한 흰 글씨, 금색 테두리
-        for (attr, v) in [(DWMWA_DARK, 1u32), (DWMWA_CAPTION, rgb(C_BG).0), (DWMWA_TEXT, rgb(C_FG).0), (DWMWA_BORDER, rgb(C_GOLD).0)] {
-            let _ = DwmSetWindowAttribute(wnd, DWMWINDOWATTRIBUTE(attr), &v as *const u32 as *const _, 4);
+        for (attr, v) in [
+            (DWMWA_DARK, 1u32),
+            (DWMWA_CAPTION, rgb(C_BG).0),
+            (DWMWA_TEXT, rgb(C_FG).0),
+            (DWMWA_BORDER, rgb(C_GOLD).0),
+        ] {
+            let _ = DwmSetWindowAttribute(
+                wnd,
+                DWMWINDOWATTRIBUTE(attr),
+                &v as *const u32 as *const _,
+                4,
+            );
         }
-        let mk = |px: i32, weight: i32| CreateFontW(-s(px), 0, 0, 0, weight, 0, 0, 0, DEFAULT_CHARSET.0 as u32, 0, 0, CLEARTYPE_QUALITY.0 as u32, 0, w!("맑은 고딕"));
-        let (f_label, f_title, f_body, f_edit, f_btn) = (mk(11, 700), mk(15, 700), mk(12, 400), mk(15, 400), mk(13, 700));
-        let child = |class: PCWSTR, text: &str, st: u32, x: i32, y: i32, w: i32, h: i32, id: i32, f: HFONT| {
+        let mk = |px: i32, weight: i32| {
+            CreateFontW(
+                -s(px),
+                0,
+                0,
+                0,
+                weight,
+                0,
+                0,
+                0,
+                DEFAULT_CHARSET.0 as u32,
+                0,
+                0,
+                CLEARTYPE_QUALITY.0 as u32,
+                0,
+                w!("맑은 고딕"),
+            )
+        };
+        let (f_label, f_title, f_body, f_edit, f_btn) = (
+            mk(11, 700),
+            mk(15, 700),
+            mk(12, 400),
+            mk(15, 400),
+            mk(13, 700),
+        );
+        let child = |class: PCWSTR,
+                     text: &str,
+                     st: u32,
+                     x: i32,
+                     y: i32,
+                     w: i32,
+                     h: i32,
+                     id: i32,
+                     f: HFONT| {
             let c = CreateWindowExW(
                 WINDOW_EX_STYLE(0),
                 class,
@@ -198,16 +266,81 @@ fn run(game: isize, prefill: &str, why: &str, h: Handle) {
             SendMessageW(c, WM_SETFONT, WPARAM(f.0 as usize), LPARAM(1));
             c
         };
-        child(w!("STATIC"), "시세 모듈  ·  등록자 이름", 0, 20, 16, 380, 16, ID_LABEL, f_label);
-        child(w!("STATIC"), "시세를 올릴 때 보일 캐릭터 이름을 적어 주세요", 0, 20, 36, 380, 22, ID_TITLE, f_title);
+        child(
+            w!("STATIC"),
+            "시세 모듈  ·  등록자 이름",
+            0,
+            20,
+            16,
+            380,
+            16,
+            ID_LABEL,
+            f_label,
+        );
+        child(
+            w!("STATIC"),
+            "시세를 올릴 때 보일 캐릭터 이름을 적어 주세요",
+            0,
+            20,
+            36,
+            380,
+            22,
+            ID_TITLE,
+            f_title,
+        );
         child(w!("STATIC"), why, 0, 20, 62, 380, 34, -1, f_body);
         // 입력 칸: 테두리 없는 EDIT 를 직접 그린 상자(FRAME) 안에 넣어 글자가 가운데 오게
-        *FRAME.lock().unwrap() = RECT { left: s(20), top: s(100), right: s(400), bottom: s(138) };
-        let edit = child(w!("EDIT"), prefill, WS_TABSTOP.0 | ES_AUTOHSCROLL as u32, 32, 109, 356, 22, ID_EDIT, f_edit);
+        *FRAME.lock().unwrap() = RECT {
+            left: s(20),
+            top: s(100),
+            right: s(400),
+            bottom: s(138),
+        };
+        let edit = child(
+            w!("EDIT"),
+            prefill,
+            WS_TABSTOP.0 | ES_AUTOHSCROLL as u32,
+            32,
+            109,
+            356,
+            22,
+            ID_EDIT,
+            f_edit,
+        );
         SendMessageW(edit, EM_LIMITTEXT, WPARAM(20), LPARAM(0));
-        child(w!("STATIC"), "20자까지 · . $ # [ ] / 는 쓸 수 없습니다", 0, 20, 144, 380, 18, ID_ERR, f_body);
-        child(w!("BUTTON"), "확인", WS_TABSTOP.0 | BS_OWNERDRAW_, 222, 176, 86, 30, IDOK.0, f_btn);
-        child(w!("BUTTON"), "나중에", WS_TABSTOP.0 | BS_OWNERDRAW_, 314, 176, 86, 30, IDCANCEL.0, f_btn);
+        child(
+            w!("STATIC"),
+            "20자까지 · . $ # [ ] / 는 쓸 수 없습니다",
+            0,
+            20,
+            144,
+            380,
+            18,
+            ID_ERR,
+            f_body,
+        );
+        child(
+            w!("BUTTON"),
+            "확인",
+            WS_TABSTOP.0 | BS_OWNERDRAW_,
+            222,
+            176,
+            86,
+            30,
+            IDOK.0,
+            f_btn,
+        );
+        child(
+            w!("BUTTON"),
+            "나중에",
+            WS_TABSTOP.0 | BS_OWNERDRAW_,
+            314,
+            176,
+            86,
+            30,
+            IDCANCEL.0,
+            f_btn,
+        );
         // 게임에서 키를 누르던 중일 수 있어 포커스를 빼앗지 않는다 (Windows 도 뒤에서 뜬 창이 포커스를 가져가지 못하게 막는다).
         // 사용자가 창을 누르면 그때 입력 칸으로 간다 (WM_ACTIVATE). 작업 표시줄 단추는 깜빡여 알린다
         let _ = ShowWindow(wnd, SW_SHOWNA);
@@ -257,7 +390,13 @@ unsafe fn draw_button(d: &DRAWITEMSTRUCT) {
         let pressed = d.itemState.0 & ODS_SELECTED.0 != 0;
         let focused = d.itemState.0 & ODS_FOCUS.0 != 0;
         let r = d.rcItem;
-        let fill = CreateSolidBrush(rgb(if pressed { 0x1c3242 } else if ok { 0x16262f } else { C_BG }));
+        let fill = CreateSolidBrush(rgb(if pressed {
+            0x1c3242
+        } else if ok {
+            0x16262f
+        } else {
+            C_BG
+        }));
         FillRect(d.hDC, &r, fill);
         let _ = DeleteObject(fill);
         let edge = CreateSolidBrush(rgb(if ok || focused { C_GOLD } else { C_LINE }));
@@ -268,7 +407,12 @@ unsafe fn draw_button(d: &DRAWITEMSTRUCT) {
         SetBkMode(d.hDC, TRANSPARENT);
         SetTextColor(d.hDC, rgb(if ok { C_GOLD_TEXT } else { C_BTN }));
         let mut tr = r;
-        DrawTextW(d.hDC, &mut buf[..n], &mut tr, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+        DrawTextW(
+            d.hDC,
+            &mut buf[..n],
+            &mut tr,
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX,
+        );
     }
 }
 
@@ -305,7 +449,9 @@ unsafe extern "system" fn proc_(h: HWND, msg: u32, wp: WPARAM, lp: LPARAM) -> LR
         match msg {
             WM_COMMAND => {
                 let code = (wp.0 >> 16) & 0xffff;
-                if (wp.0 & 0xffff) as i32 == ID_EDIT && (code == EN_SETFOCUS_ || code == EN_KILLFOCUS_) {
+                if (wp.0 & 0xffff) as i32 == ID_EDIT
+                    && (code == EN_SETFOCUS_ || code == EN_KILLFOCUS_)
+                {
                     FOCUS.store(code == EN_SETFOCUS_, SeqCst);
                     let r = *FRAME.lock().unwrap();
                     let _ = InvalidateRect(h, Some(&r), TRUE);

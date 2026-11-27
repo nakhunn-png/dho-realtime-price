@@ -11,7 +11,10 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 
 /// /api/nav 를 읽어도 되는 웹 주소 (공개 지도)
-const NAV_ORIGINS: [&str; 2] = ["https://real-time-dho.web.app", "https://real-time-dho.firebaseapp.com"];
+const NAV_ORIGINS: [&str; 2] = [
+    "https://real-time-dho.web.app",
+    "https://real-time-dho.firebaseapp.com",
+];
 pub const NAV_PORT: u16 = 38765;
 
 /// 게임 창별 배 위치와 마지막으로 읽은 도시. 바뀌면 /api/nav 를 보고 있는 지도에 바로 보낸다.
@@ -26,7 +29,16 @@ pub struct NavHub {
 
 impl NavHub {
     #[allow(clippy::too_many_arguments)]
-    pub fn update(&self, wid: Hwnd, chr: &str, x: u32, y: u32, at: f64, hd: Option<f64>, bw: Option<f64>) {
+    pub fn update(
+        &self,
+        wid: Hwnd,
+        chr: &str,
+        x: u32,
+        y: u32,
+        at: f64,
+        hd: Option<f64>,
+        bw: Option<f64>,
+    ) {
         let mut o = Map::new();
         o.insert("id".into(), json!(wid));
         o.insert("char".into(), json!(chr));
@@ -52,7 +64,10 @@ impl NavHub {
     /// 이 창에서 도시에 들어옴 (도시 이름을 새로 읽었을 때만 부른다. 같은 도시로 돌아온 것도 새로 부른다)
     pub fn set_town(&self, wid: Hwnd, chr: &str, city: &str, at: f64) {
         let mut g = self.m.lock().unwrap();
-        self.towns.lock().unwrap().insert(wid, json!({"id": wid, "char": chr, "city": city, "at": at}));
+        self.towns
+            .lock()
+            .unwrap()
+            .insert(wid, json!({"id": wid, "char": chr, "city": city, "at": at}));
         g.0 += 1;
         self.cv.notify_all();
     }
@@ -69,7 +84,10 @@ impl NavHub {
     /// 판(ver)이 바뀔 때까지 최대 timeout 기다린다 → (지금 판, 배 목록, 도시 목록)
     fn wait(&self, ver: u64, timeout: Duration) -> (u64, Vec<Value>, Vec<Value>) {
         let g = self.m.lock().unwrap();
-        let (g, _) = self.cv.wait_timeout_while(g, timeout, |g| g.0 == ver).unwrap();
+        let (g, _) = self
+            .cv
+            .wait_timeout_while(g, timeout, |g| g.0 == ver)
+            .unwrap();
         let towns = self.towns.lock().unwrap().values().cloned().collect();
         (g.0, g.1.values().cloned().collect(), towns)
     }
@@ -112,7 +130,9 @@ fn handle(mut s: TcpStream, hub: &NavHub) -> std::io::Result<()> {
     let path = path.split('?').next().unwrap_or("");
     // 공개 지도가 이 PC의 /api/nav 를 읽게 허락 (크롬의 로컬 네트워크 접근: 처음 한 번 허용 창이 뜰 수 있다)
     let cors = if NAV_ORIGINS.contains(&origin.as_str()) {
-        format!("Access-Control-Allow-Origin: {origin}\r\nAccess-Control-Allow-Private-Network: true\r\nVary: Origin\r\n")
+        format!(
+            "Access-Control-Allow-Origin: {origin}\r\nAccess-Control-Allow-Private-Network: true\r\nVary: Origin\r\n"
+        )
     } else {
         String::new()
     };
@@ -123,7 +143,9 @@ fn handle(mut s: TcpStream, hub: &NavHub) -> std::io::Result<()> {
         return s.write_all(h.as_bytes());
     }
     if method != "GET" || path != "/api/nav" {
-        return s.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+        return s.write_all(
+            b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        );
     }
     s.write_all(
         format!("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream; charset=utf-8\r\nCache-Control: no-store\r\n{cors}Connection: close\r\n\r\n")
@@ -137,7 +159,9 @@ fn handle(mut s: TcpStream, hub: &NavHub) -> std::io::Result<()> {
             s.write_all(b": keep-alive\n\n")?; // 15초마다 연결 유지
         } else {
             ver = v2;
-            s.write_all(format!("data: {}\n\n", json!({ "ships": ships, "towns": towns })).as_bytes())?;
+            s.write_all(
+                format!("data: {}\n\n", json!({ "ships": ships, "towns": towns })).as_bytes(),
+            )?;
         }
         s.flush()?;
     }
@@ -153,7 +177,10 @@ mod tests {
         hub.set_town(7, "아이", "리스본", 100.0);
         let (v1, ships, towns) = hub.wait(u64::MAX, Duration::from_millis(1));
         assert!(ships.is_empty());
-        assert_eq!(towns, vec![json!({"id": 7, "char": "아이", "city": "리스본", "at": 100.0})]);
+        assert_eq!(
+            towns,
+            vec![json!({"id": 7, "char": "아이", "city": "리스본", "at": 100.0})]
+        );
         // 같은 도시로 다시 들어와도 새 판 (시각이 바뀐다)
         hub.set_town(7, "아이", "리스본", 200.0);
         let (v2, _, towns) = hub.wait(v1, Duration::from_millis(1));

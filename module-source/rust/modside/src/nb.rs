@@ -27,7 +27,9 @@ pub struct NbTrack {
 /// 분류가 목록에서 한 칸만 움직였나 (위·아래, 끝에서 처음으로 넘어가는 것 포함)
 fn one_step(a: Option<&str>, b: Option<&str>) -> bool {
     let ix = |k: Option<&str>| k.and_then(|k| KINDS.iter().position(|x| *x == k));
-    let (Some(i), Some(j)) = (ix(a), ix(b)) else { return false };
+    let (Some(i), Some(j)) = (ix(a), ix(b)) else {
+        return false;
+    };
     let n = KINDS.len();
     (i + 1) % n == j || (j + 1) % n == i
 }
@@ -55,17 +57,26 @@ impl NbTrack {
         let stable = t - self.since >= NB_SETTLE_SEC - 1e-9;
         let good = if !self.city_ok {
             // 도시를 바꾼 뒤 0.6초 그대로이거나, 1초가 지났고 오른쪽이 바꾸기 직전과 다르면 (방향키를 누르고 있어 그대로일 틈이 없을 때)
-            let fresh = !(self.city_before.as_ref() == Some(&pane) && t - self.city_at < NB_STALE_SEC);
+            let fresh =
+                !(self.city_before.as_ref() == Some(&pane) && t - self.city_at < NB_STALE_SEC);
             let since_city = t - self.city_at;
-            let ok = fresh && ((since_city >= NB_SETTLE_SEC - 1e-9 && stable) || (since_city >= NB_CITY_LAG_SEC && self.city_before.as_ref() != Some(&pane)));
+            let ok = fresh
+                && ((since_city >= NB_SETTLE_SEC - 1e-9 && stable)
+                    || (since_city >= NB_CITY_LAG_SEC && self.city_before.as_ref() != Some(&pane)));
             self.city_ok = ok;
             ok
         } else {
             // 분류가 바뀐 첫 화면을 바로 쓰는 조건 (2026-11-19 녹화 1700장): 목록이 한 칸만 움직였고 (두 칸 건너뛴 화면은 그래프가 가운데 분류 것이었음),
             // 그래프가 앞 화면과 다르고, 이 도시에서 다른 분류로 쓴 그래프가 아니다
             let fast = prev.as_ref().is_some_and(|p| {
-                p.list == scr.list && one_step(p.kind.as_deref(), scr.kind.as_deref()) && p.pts != scr.pts
-            }) && scr.pts.is_some_and(|p| self.used.get(&p).is_none_or(|k| Some(k) == scr.kind.as_ref()));
+                p.list == scr.list
+                    && one_step(p.kind.as_deref(), scr.kind.as_deref())
+                    && p.pts != scr.pts
+            }) && scr.pts.is_some_and(|p| {
+                self.used
+                    .get(&p)
+                    .is_none_or(|k| Some(k) == scr.kind.as_ref())
+            });
             stable || fast
         };
         if good {
@@ -90,7 +101,10 @@ mod tests {
             kind: Some("잡화".into()),
             state: Some(state.into()),
             pts: Some([pts; POINTS]),
-            list: vec![("운대산".into(), Some("보통".into())), ("중경".into(), Some("전쟁".into()))],
+            list: vec![
+                ("운대산".into(), Some("보통".into())),
+                ("중경".into(), Some("전쟁".into())),
+            ],
         }
     }
 
@@ -135,7 +149,13 @@ mod tests {
         let mut got: Vec<(String, String, String)> = vec![];
         for l in include_str!("testdata/nbrec_unsan.txt").lines() {
             let t: f64 = l.trim_start().split('s').next().unwrap().parse().unwrap();
-            let Some((head, pts)) = l.split_once(") ").map(|x| x.1).and_then(|x| x.split_once(" | ")) else { continue };
+            let Some((head, pts)) = l
+                .split_once(") ")
+                .map(|x| x.1)
+                .and_then(|x| x.split_once(" | "))
+            else {
+                continue;
+            };
             let f: Vec<&str> = head.split(' ').collect();
             let p: Vec<u8> = pts.split(' ').map(|v| v.parse().unwrap()).collect();
             let opt = |v: &str| (v != "?").then(|| v.to_string());
@@ -156,9 +176,16 @@ mod tests {
         }
         // 운대산 이름으로 천주 그래프를 쓰지 않는다
         let cheonju = "18 16 16 21 18 16 21 18 16 16 25";
-        assert!(!got.iter().any(|e| e.0 == "운대산" && e.2 == cheonju), "{got:?}");
+        assert!(
+            !got.iter().any(|e| e.0 == "운대산" && e.2 == cheonju),
+            "{got:?}"
+        );
         // 광석에 귀금속 그래프를 붙이지 않는다
-        assert!(!got.iter().any(|e| e.1 == "광석" && e.2 == "7 10 9 8 8 7 7 10 9 8 8"), "{got:?}");
+        assert!(
+            !got.iter()
+                .any(|e| e.1 == "광석" && e.2 == "7 10 9 8 8 7 7 10 9 8 8"),
+            "{got:?}"
+        );
         // 한 분류에 그래프는 하나 (방향키 두 바퀴)
         let mut by: HashMap<String, HashSet<String>> = HashMap::new();
         for e in got.iter().filter(|e| e.0 == "운대산") {
@@ -171,16 +198,26 @@ mod tests {
     #[test]
     fn nanban_waits_for_right_pane() {
         let mut tr = NbTrack::default();
-        let ticks = |a: f64, b: f64| (0..).map(move |i| a + i as f64 * 0.1).take_while(move |t| *t < b - 1e-9);
+        let ticks = |a: f64, b: f64| {
+            (0..)
+                .map(move |i| a + i as f64 * 0.1)
+                .take_while(move |t| *t < b - 1e-9)
+        };
         // 중경(전쟁, 5틱): 0.6초 뒤에야 씀
-        let f: Vec<_> = ticks(0.0, 1.0).map(|t| (t, scr("중경", 5, "전쟁"))).collect();
+        let f: Vec<_> = ticks(0.0, 1.0)
+            .map(|t| (t, scr("중경", 5, "전쟁")))
+            .collect();
         assert!((first_ok(&mut tr, &f).unwrap() - 0.6).abs() < 1e-6);
         // 운대산을 누름: 오른쪽은 0.8초 동안 중경 것 그대로 → 쓰지 않음, 바뀐 뒤 0.6초 지나서 씀
-        let mut f: Vec<_> = ticks(1.0, 1.8).map(|t| (t, scr("운대산", 5, "전쟁"))).collect();
+        let mut f: Vec<_> = ticks(1.0, 1.8)
+            .map(|t| (t, scr("운대산", 5, "전쟁")))
+            .collect();
         f.extend(ticks(1.8, 3.0).map(|t| (t, scr("운대산", 40, "보통"))));
         assert!((first_ok(&mut tr, &f).unwrap() - 2.0).abs() < 1e-6);
         // 다시 중경: 오른쪽이 정말로 운대산과 같은 값이면 2초 기다린 뒤 씀
-        let f: Vec<_> = ticks(3.0, 6.0).map(|t| (t, scr("중경", 40, "보통"))).collect();
+        let f: Vec<_> = ticks(3.0, 6.0)
+            .map(|t| (t, scr("중경", 40, "보통")))
+            .collect();
         assert!((first_ok(&mut tr, &f).unwrap() - 5.0).abs() < 1e-6);
     }
 }

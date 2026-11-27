@@ -62,21 +62,38 @@ fn pairs(s: &str, ok: impl Fn(char) -> bool) -> Vec<(String, String)> {
 
 pub fn read_config() -> Option<Config> {
     let txt = CONFIG_JS;
-    let s = |k: &str| block(txt, k, '"', '"').map(|v| v.trim().to_string()).unwrap_or_default();
+    let s = |k: &str| {
+        block(txt, k, '"', '"')
+            .map(|v| v.trim().to_string())
+            .unwrap_or_default()
+    };
     let cfg = Config {
         api_key: s("apiKey"),
         database_url: s("databaseURL"),
-        servers: block(txt, "servers", '[', ']').map(quoted).unwrap_or_default(),
+        servers: block(txt, "servers", '[', ']')
+            .map(quoted)
+            .unwrap_or_default(),
         solo: block(txt, "solo", '[', ']').map(quoted).unwrap_or_default(),
-        addrs: block(txt, "addrs", '{', '}').map(|b| pairs(b, |c| c.is_ascii_digit() || c == '.' || c == ':')).unwrap_or_default(),
-        ranges: block(txt, "ranges", '{', '}').map(|b| pairs(b, |c| c.is_ascii_digit() || c == '.' || c == '-')).unwrap_or_default(),
+        addrs: block(txt, "addrs", '{', '}')
+            .map(|b| pairs(b, |c| c.is_ascii_digit() || c == '.' || c == ':'))
+            .unwrap_or_default(),
+        ranges: block(txt, "ranges", '{', '}')
+            .map(|b| pairs(b, |c| c.is_ascii_digit() || c == '.' || c == '-'))
+            .unwrap_or_default(),
     };
     (!cfg.api_key.is_empty() && !cfg.database_url.is_empty()).then_some(cfg)
 }
 
 fn names(txt: &str, key: &str) -> Vec<String> {
     let v: Value = serde_json::from_str(txt).expect("이름 목록");
-    v[key].as_array().map(|a| a.iter().filter_map(|g| g["name"].as_str().map(String::from)).collect()).unwrap_or_default()
+    v[key]
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .filter_map(|g| g["name"].as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 /// (품목 이름, 도시 이름)

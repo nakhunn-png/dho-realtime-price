@@ -290,7 +290,7 @@ fn emit(target: Option<(&str, u64)>, data: Value) {
     write_line(&json!({ "t": "emit", "target": t, "data": data }));
 }
 
-/// Navigator 가 알려 준 게임 창 (preferred 역할)
+/// Navigator 가 알려 준 게임 창 중 활성인 것 (hud 우선)
 #[derive(Clone, Debug, PartialEq)]
 struct Target {
     role: String,
@@ -301,8 +301,9 @@ struct Target {
     height: i64,
 }
 
+/// 1.0.11 (2026-11-27 사용자 결정): `active` 인 창만 읽는다. hud 먼저, 그다음 survey. 둘 다 활성이 아니면 대상 없음
 fn parse_target(line: &Value) -> Option<Target> {
-    let role = line["preferred"].as_str()?.to_string();
+    let role = ["hud", "survey"].into_iter().find(|r| line[*r]["active"].as_bool() == Some(true))?.to_string();
     let view = &line[role.as_str()];
     let hwnd = isize::from_str_radix(view["hwnd"].as_str()?.trim_start_matches("0x"), 16).ok()?;
     Some(Target {
@@ -625,7 +626,7 @@ fn worker(target: Arc<Mutex<Option<Target>>>, data: Option<PathBuf>, stop: Arc<A
         // 1.0.4: 'HUD 끄기'는 위 줄·알림만 숨긴다 (남만 틱 HUD 는 보이게 게임 창은 그대로 준다)
         hud.set_game(want.as_ref().map(|w| w.hwnd));
         hud.set_off(HUD_OFF.load(Ordering::Relaxed));
-        // 대상 창이 바뀜: 복사를 새로 시작하고 읽던 것을 버린다 (같은 창의 크기·활성 변화는 그대로)
+        // 대상 창이 바뀜: 복사를 새로 시작하고 읽던 것을 버린다 (같은 창의 크기 변화는 그대로, 활성이 아니면 대상 없음)
         let same = match (&cur, &want) {
             (Some(a), Some(b)) => a.hwnd == b.hwnd && a.pid == b.pid && a.generation == b.generation,
             (None, None) => true,
@@ -1132,4 +1133,29 @@ fn main() {
     }
     stop.store(true, Ordering::SeqCst);
     let _ = w.join();
+}
+
+#[cfg(test)]
+mod target_tests {
+    use super::parse_target;
+    use serde_json::json;
+
+    fn view(hwnd: &str, active: bool) -> serde_json::Value {
+        json!({ "pid": 1, "hwnd": hwnd, "clientWidth": 1920, "clientHeight": 1080, "active": active })
+    }
+
+    #[test]
+    fn only_active_window() {
+        // hud 활성 → hud
+        let l = json!({ "t": "target", "hud": view("0x10", true), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
+        assert_eq!(parse_target(&l).map(|t| (t.role, t.hwnd, t.generation)), Some(("hud".into(), 0x10, 3)));
+        // hud 비활성, survey 활성 → survey
+        let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
+        assert_eq!(parse_target(&l).map(|t| (t.role, t.hwnd)), Some(("survey".into(), 0x20)));
+        // 둘 다 비활성 → 없음 (preferred 가 있어도)
+        let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": null, "surveyGeneration": 5, "preferred": "hud" });
+        assert!(parse_target(&l).is_none());
+        // 둘 다 없음
+        assert!(parse_target(&json!({ "t": "target", "hud": null, "survey": null, "preferred": null })).is_none());
+    }
 }

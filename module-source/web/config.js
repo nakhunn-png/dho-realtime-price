@@ -18,6 +18,9 @@ window.DHO_CONFIG = {
     헬폴: "https://github.com/nakhunn-png/dho-realtime-price/releases/latest/download/HelPol-Gamjigi.exe",
     에이레네: "https://github.com/nakhunn-png/dho-realtime-price/releases/latest/download/Eirene-Gamjigi.exe",
   },
+  // 2026-11-27 사용자 "돈은 절대 내기 싫어, 트래픽은 늘리고 싶어": 큰 지도 그림은 Firebase Hosting(월 10GB) 대신
+  // GitHub 공개 저장소의 assets/ 를 jsDelivr(무료 CDN)로 받는다. 못 받으면 이 사이트의 map/ 그대로 (app.js setLayer)
+  cdn: "https://cdn.jsdelivr.net/gh/nakhunn-png/dho-realtime-price@main/assets/",
   // 지도 왼쪽 아래 초록 불 옆 "건의사항 / 오류신고 (관리자 오픈카톡)" 링크
   kakao: "https://open.kakao.com/o/sX4V90Uc",
   addrs: { "203.242.208.218:9067": "헬레네", "203.242.208.228:9066": "폴라리스" },

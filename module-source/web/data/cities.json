@@ -8,7 +8,7 @@
   "layers": [
    {
     "name": "해역조사지도",
-    "image": "map/worldmap_1.png"
+    "image": "map/worldmap_1.webp"
    },
    {
     "name": "기본테마",

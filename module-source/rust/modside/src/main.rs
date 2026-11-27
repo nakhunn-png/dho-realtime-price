@@ -301,9 +301,23 @@ struct Target {
     height: i64,
 }
 
-/// 1.0.11 (2026-11-27 사용자 결정): `active` 인 창만 읽는다. hud 먼저, 그다음 survey. 둘 다 활성이 아니면 대상 없음
-fn parse_target(line: &Value) -> Option<Target> {
-    let role = ["hud", "survey"].into_iter().find(|r| line[*r]["active"].as_bool() == Some(true))?.to_string();
+/// 1.0.11 (2026-11-27 사용자 결정): `active` 인 창만 읽는다. hud 먼저, 그다음 survey.
+/// 1.0.12 (2026-11-27 사용자 "이전버전까지는 됐잖아?"): 게임 창이 하나도 활성이 아니면(브라우저로 웹 지도를 보는 중)
+/// 멈추지 않고 마지막으로 활성이었던 게임 창(`prev`)을 계속 읽는다 → 웹 지도 네비가 끊기지 않음.
+/// 그 창이 목록에 그대로 있으면 그 값으로, 목록이 비었으면 창이 살아 있는 동안(`alive`) 그대로. 창이 닫히면 대상 없음
+fn parse_target(line: &Value, prev: Option<&Target>, alive: impl Fn(isize) -> bool) -> Option<Target> {
+    let hw = |r: &str| line[r]["hwnd"].as_str().and_then(|s| isize::from_str_radix(s.trim_start_matches("0x"), 16).ok());
+    let role = match ["hud", "survey"].into_iter().find(|r| line[*r]["active"].as_bool() == Some(true)) {
+        Some(r) => r.to_string(),
+        None => {
+            let p = prev?;
+            match ["hud", "survey"].into_iter().find(|r| hw(r) == Some(p.hwnd)) {
+                Some(r) => r.to_string(),
+                None if line["hud"].is_null() && line["survey"].is_null() && alive(p.hwnd) => return Some(p.clone()),
+                None => return None,
+            }
+        }
+    };
     let view = &line[role.as_str()];
     let hwnd = isize::from_str_radix(view["hwnd"].as_str()?.trim_start_matches("0x"), 16).ok()?;
     Some(Target {
@@ -1097,8 +1111,10 @@ fn main() {
     while let Some(line) = next(&mut lines) {
         match line["t"].as_str() {
             Some("target") => {
-                let tg = parse_target(&line);
                 let mut g = target.lock().unwrap();
+                let tg = parse_target(&line, g.as_ref(), |h| unsafe {
+                    windows::Win32::UI::WindowsAndMessaging::IsWindow(windows::Win32::Foundation::HWND(h as _)).as_bool()
+                });
                 if tg.as_ref().map(|t| (t.hwnd, t.pid, t.generation)) != g.as_ref().map(|t| (t.hwnd, t.pid, t.generation)) {
                     let msg = match &tg {
                         Some(t) => format!("[대상] {} 세대 {} · pid {}", t.role, t.generation, if t.pid != 0 { "있음" } else { "없음" }),
@@ -1147,15 +1163,39 @@ mod target_tests {
     #[test]
     fn only_active_window() {
         // hud 활성 → hud
+        let yes = |_| true;
         let l = json!({ "t": "target", "hud": view("0x10", true), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
-        assert_eq!(parse_target(&l).map(|t| (t.role, t.hwnd, t.generation)), Some(("hud".into(), 0x10, 3)));
+        assert_eq!(parse_target(&l, None, yes).map(|t| (t.role, t.hwnd, t.generation)), Some(("hud".into(), 0x10, 3)));
         // hud 비활성, survey 활성 → survey
         let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": view("0x20", true), "surveyGeneration": 5, "preferred": "hud" });
-        assert_eq!(parse_target(&l).map(|t| (t.role, t.hwnd)), Some(("survey".into(), 0x20)));
-        // 둘 다 비활성 → 없음 (preferred 가 있어도)
+        let sv = parse_target(&l, None, yes);
+        assert_eq!(sv.clone().map(|t| (t.role, t.hwnd)), Some(("survey".into(), 0x20)));
+        // 처음부터 둘 다 비활성 → 없음 (preferred 가 있어도)
         let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 3, "survey": null, "surveyGeneration": 5, "preferred": "hud" });
-        assert!(parse_target(&l).is_none());
+        assert!(parse_target(&l, None, yes).is_none());
         // 둘 다 없음
-        assert!(parse_target(&json!({ "t": "target", "hud": null, "survey": null, "preferred": null })).is_none());
+        assert!(parse_target(&json!({ "t": "target", "hud": null, "survey": null, "preferred": null }), None, yes).is_none());
+    }
+
+    #[test]
+    fn keep_last_active_when_none_active() {
+        let yes = |_| true;
+        let l = json!({ "t": "target", "hud": view("0x10", true), "hudGeneration": 3, "survey": view("0x20", false), "surveyGeneration": 5 });
+        let a = parse_target(&l, None, yes).unwrap();
+        // 브라우저가 앞에 옴: 둘 다 비활성 → 마지막 활성 창(0x10) 그대로, 새 세대 반영
+        let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 4, "survey": view("0x20", false), "surveyGeneration": 5 });
+        let b = parse_target(&l, Some(&a), yes).unwrap();
+        assert_eq!((b.role.as_str(), b.hwnd, b.generation), ("hud", 0x10, 4));
+        // 목록이 비었지만 창은 살아 있음 → 그대로
+        let e = json!({ "t": "target", "hud": null, "survey": null });
+        assert_eq!(parse_target(&e, Some(&b), yes), Some(b.clone()));
+        // 창이 닫힘 → 없음
+        assert!(parse_target(&e, Some(&b), |_| false).is_none());
+        // 마지막 창이 목록에서 빠지고 다른 비활성 창만 있음 → 없음
+        let l = json!({ "t": "target", "hud": view("0x30", false), "hudGeneration": 6, "survey": null });
+        assert!(parse_target(&l, Some(&b), yes).is_none());
+        // 다른 창이 활성이 되면 그 창으로
+        let l = json!({ "t": "target", "hud": view("0x10", false), "hudGeneration": 4, "survey": view("0x20", true), "surveyGeneration": 5 });
+        assert_eq!(parse_target(&l, Some(&b), yes).map(|t| t.hwnd), Some(0x20));
     }
 }

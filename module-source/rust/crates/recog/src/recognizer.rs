@@ -724,7 +724,8 @@ impl Recognizer {
 
     /// 2026-11-28: 0.9 → 0.985. 화면 '라이거냥이'가 적힌 '타이거낭이'와 0.944 로 맞아 다른 캐릭터 시세가 그 이름으로 올라갔다.
     /// 진짜 이름은 1.000 (examples/namescore.rs 로 잰 값), 한 획 다른 '타이거냥이'↔'타이거낭이'도 0.980
-    pub const NAME_SURE: f64 = 0.985;
+    /// 2026-11-28 모듈 1.1.0 (사용자 "미확인이라고 적는 정도가 너무 엄격, 1.0.10 수준으로"): 다시 0.9
+    pub const NAME_SURE: f64 = 0.9;
 
     /// 점검용: 이름 칸과 적힌 이름 글자 그림의 맞춤 점수 (높은 순)
     pub fn character_scores(&self, rgb: &Rgb, client_off: (i64, i64)) -> Vec<(f64, String)> {
@@ -743,7 +744,7 @@ impl Recognizer {
         scores
     }
 
-    /// 이름 칸 마스크(pad 2)와 적힌 이름 글자 그림이 98.5% 넘게, 다음 후보보다 2% 넘게 맞으면 그 이름
+    /// 이름 칸 마스크(pad 2)와 적힌 이름 글자 그림이 90% 넘게, 다음 후보보다 2% 넘게 맞으면 그 이름
     fn char_by_font(&self, mp: &Gray) -> Option<String> {
         let mut scores: Ranked = vec![];
         for (t, n) in self.chars.tpl.iter().zip(&self.chars.names) {

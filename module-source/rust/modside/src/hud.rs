@@ -42,11 +42,22 @@ pub fn server_color(s: &str) -> u32 {
     }
 }
 
+/// 1.2.0 (2026-11-28 사용자 "hud 색과 크기를 도시, 서버, 일반 hud 나눠서"): 글 조각의 종류.
+/// 그릴 때 패널 설정(storage ui.hudStyle)의 색·크기를 종류별로 입힌다
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
+pub enum Role {
+    #[default]
+    General,
+    Server,
+    City,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Part {
     pub text: String,
     pub color: u32,
     pub bold: bool,
+    pub role: Role,
 }
 
 pub fn p(text: impl Into<String>, color: u32) -> Part {
@@ -54,6 +65,7 @@ pub fn p(text: impl Into<String>, color: u32) -> Part {
         text: text.into(),
         color,
         bold: false,
+        role: Role::General,
     }
 }
 
@@ -62,6 +74,130 @@ pub fn pb(text: impl Into<String>, color: u32) -> Part {
         text: text.into(),
         color,
         bold: true,
+        role: Role::General,
+    }
+}
+
+/// 서버 이름 (굵게, 서버 색)
+pub fn srv(name: impl Into<String>) -> Part {
+    let text = name.into();
+    let color = server_color(&text);
+    Part {
+        text,
+        color,
+        bold: true,
+        role: Role::Server,
+    }
+}
+
+/// 도시 이름
+pub fn city(name: impl Into<String>) -> Part {
+    Part {
+        text: name.into(),
+        color: FG,
+        bold: false,
+        role: Role::City,
+    }
+}
+
+// ---------- 1.2.0 HUD 색·크기 (패널 'HUD 설정') ----------
+/// 크기는 1.0 = 예전 크기. 색 None = 예전 색
+#[derive(Clone, Debug, PartialEq)]
+pub struct Style {
+    pub scale: f64,
+    pub server: f64,
+    pub city: f64,
+    pub general: f64,
+    pub server_colors: Vec<(String, u32)>,
+    pub city_color: Option<u32>,
+    pub general_color: Option<u32>,
+}
+
+impl Default for Style {
+    fn default() -> Self {
+        Style {
+            scale: 1.0,
+            server: 1.0,
+            city: 1.0,
+            general: 1.0,
+            server_colors: vec![],
+            city_color: None,
+            general_color: None,
+        }
+    }
+}
+
+fn hex(v: &serde_json::Value) -> Option<u32> {
+    let s = v.as_str()?.trim().trim_start_matches('#');
+    if s.len() != 6 {
+        return None;
+    }
+    u32::from_str_radix(s, 16).ok()
+}
+
+fn pct(v: &serde_json::Value) -> f64 {
+    v.as_f64().map_or(1.0, |n| (n / 100.0).clamp(0.5, 3.0))
+}
+
+impl Style {
+    /// storage ui.hudStyle = {size, server:{size, c:{서버:#rrggbb}}, city:{size, c}, general:{size, c}} (크기는 %). null = 기본
+    pub fn from_json(v: &serde_json::Value) -> Style {
+        if !v.is_object() {
+            return Style::default();
+        }
+        Style {
+            scale: pct(&v["size"]),
+            server: pct(&v["server"]["size"]),
+            city: pct(&v["city"]["size"]),
+            general: pct(&v["general"]["size"]),
+            server_colors: v["server"]["c"]
+                .as_object()
+                .map(|m| {
+                    m.iter()
+                        .filter_map(|(k, c)| hex(c).map(|c| (k.clone(), c)))
+                        .collect()
+                })
+                .unwrap_or_default(),
+            city_color: hex(&v["city"]["c"]),
+            general_color: hex(&v["general"]["c"]),
+        }
+    }
+
+    /// 조각 → (색, 크기 배율)
+    fn look(&self, pt: &Part) -> (u32, f64) {
+        match pt.role {
+            Role::Server => (
+                self.server_colors
+                    .iter()
+                    .find(|(k, _)| *k == pt.text)
+                    .map_or(pt.color, |c| c.1),
+                self.server,
+            ),
+            Role::City => (self.city_color.unwrap_or(pt.color), self.city),
+            // 일반 글씨 색만 바꾼다 (경고 금색·흐린 글씨는 뜻이 있으므로 그대로)
+            Role::General => (
+                if pt.color == FG {
+                    self.general_color.unwrap_or(FG)
+                } else {
+                    pt.color
+                },
+                self.general,
+            ),
+        }
+    }
+}
+
+static STYLE: Mutex<Option<Style>> = Mutex::new(None);
+
+fn style() -> Style {
+    STYLE.lock().unwrap().clone().unwrap_or_default()
+}
+
+/// 패널에서 바꾸면 preview = true → 게임 창이 맨 앞이 아니어도 3초 미리보기
+pub fn set_style(s: Style, preview: bool) {
+    *STYLE.lock().unwrap() = Some(s);
+    if preview {
+        *PREVIEW_UNTIL.lock().unwrap() = now() + PREVIEW_SEC;
     }
 }
 
@@ -190,6 +326,7 @@ impl Hud {
 struct View {
     rows: Vec<(Vec<Part>, bool)>, // (조각, 큰 글씨인가)
     dpi: u32,
+    style: Style,
 }
 
 static VIEW: Mutex<Option<View>> = Mutex::new(None);
@@ -243,29 +380,43 @@ fn pt(size: f64, dpi: u32) -> i32 {
     (size * dpi as f64 / 72.0).round() as i32
 }
 
+/// 크기마다 글꼴을 한 번만 만든다 (1.2.0: 종류별 크기 배율)
 struct Fonts {
-    small: (HFONT, HFONT),
-    big: (HFONT, HFONT),
+    dpi: u32,
+    scale: f64,
+    made: std::cell::RefCell<Vec<((i32, bool), HFONT)>>,
 }
 
 impl Fonts {
-    fn new(dpi: u32) -> Self {
+    fn new(dpi: u32, scale: f64) -> Self {
         Fonts {
-            small: (font(pt(8.0, dpi), false), font(pt(8.0, dpi), true)),
-            big: (font(pt(9.0, dpi), false), font(pt(9.0, dpi), true)),
+            dpi,
+            scale,
+            made: Default::default(),
         }
     }
-    fn get(&self, big: bool, bold: bool) -> HFONT {
-        let f = if big { self.big } else { self.small };
-        if bold { f.1 } else { f.0 }
+    fn get(&self, big: bool, bold: bool, mult: f64) -> HFONT {
+        let base = if big { 9.0 } else { 8.0 };
+        let px = pt(base * self.scale * mult, self.dpi).max(6);
+        let mut made = self.made.borrow_mut();
+        if let Some((_, f)) = made.iter().find(|(k, _)| *k == (px, bold)) {
+            return *f;
+        }
+        let f = font(px, bold);
+        made.push(((px, bold), f));
+        f
+    }
+    /// 여백도 전체 크기를 따라간다
+    fn px(&self, v: i32) -> i32 {
+        (v as f64 * self.scale).round() as i32
     }
 }
 
 impl Drop for Fonts {
     fn drop(&mut self) {
         unsafe {
-            for f in [self.small.0, self.small.1, self.big.0, self.big.1] {
-                let _ = DeleteObject(f);
+            for (_, f) in self.made.borrow().iter() {
+                let _ = DeleteObject(*f);
             }
         }
     }
@@ -294,11 +445,12 @@ fn row_sizes(dc: HDC, fonts: &Fonts, v: &View) -> Vec<(i32, i32)> {
         .map(|(parts, big)| {
             let (mut w, mut h) = (0, 0);
             for pt in parts {
-                let (a, b) = text_size(dc, fonts.get(*big, pt.bold), &pt.text);
+                let f = fonts.get(*big, pt.bold, v.style.look(pt).1);
+                let (a, b) = text_size(dc, f, &pt.text);
                 w += a;
                 h = h.max(b);
             }
-            (w + PADX * 2, h + PADY * 2)
+            (w + fonts.px(PADX) * 2, h + fonts.px(PADY) * 2)
         })
         .collect()
 }
@@ -307,7 +459,8 @@ fn paint(dc: HDC, rc: RECT) {
     let Some(v) = VIEW.lock().unwrap().clone() else {
         return;
     };
-    let fonts = Fonts::new(v.dpi);
+    let fonts = Fonts::new(v.dpi, v.style.scale);
+    let (padx, pady, gap) = (fonts.px(PADX), fonts.px(PADY), fonts.px(GAP));
     unsafe {
         let key = CreateSolidBrush(rgb(KEY));
         FillRect(dc, &rc, key);
@@ -330,24 +483,34 @@ fn paint(dc: HDC, rc: RECT) {
             let edge = CreateSolidBrush(rgb(if *big { EDGE_HI } else { EDGE }));
             FrameRect(dc, &band, edge);
             let _ = DeleteObject(edge);
-            let mut x = x0 + PADX;
+            let mut x = x0 + padx;
             for pt in parts {
-                let f = fonts.get(*big, pt.bold);
+                if pt.text.is_empty() {
+                    continue; // 빈 글자는 그리지 않는다 (USER32 안에서 죽은 적 있음)
+                }
+                let (color, mult) = v.style.look(pt);
+                let f = fonts.get(*big, pt.bold, mult);
                 let (tw, _) = text_size(dc, f, &pt.text);
                 let old = SelectObject(dc, f);
-                SetTextColor(dc, rgb(pt.color));
+                SetTextColor(dc, rgb(color));
                 let mut s: Vec<u16> = pt.text.encode_utf16().collect();
+                // 크기가 다른 조각도 아래 줄을 맞춘다
                 let mut r = RECT {
                     left: x,
-                    top: y + PADY,
+                    top: y,
                     right: x + tw + 2,
-                    bottom: y + h,
+                    bottom: y + h - pady,
                 };
-                DrawTextW(dc, &mut s, &mut r, DT_SINGLELINE | DT_NOPREFIX | DT_NOCLIP);
+                DrawTextW(
+                    dc,
+                    &mut s,
+                    &mut r,
+                    DT_SINGLELINE | DT_BOTTOM | DT_NOPREFIX | DT_NOCLIP,
+                );
                 SelectObject(dc, old);
                 x += tw;
             }
-            y += h + GAP;
+            y += h + gap;
         }
         let _ = DeleteObject(bg);
     }
@@ -658,7 +821,23 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         let mut rows = vec![];
         if t < *PREVIEW_UNTIL.lock().unwrap() {
             // 1.0.6: 위치 미리보기 (바다·HUD 끄기여도 잠깐 보인다)
-            rows.push((vec![p("HUD 위치 · 패널에서 옮기는 중", FG)], true));
+            // 1.2.0: 색·크기도 보이게 서버·도시·일반 글씨를 다 넣는다
+            let sample = if s.status.iter().any(|x| x.role == Role::City) {
+                s.status.clone()
+            } else {
+                vec![srv("헬레네"), p(" · ", FG), city("리스본")]
+            };
+            rows.push((sample, false));
+            rows.push((
+                vec![
+                    srv("헬레네"),
+                    p(" ", FG),
+                    city("리스본"),
+                    p(" 매각 아몬드유 319두캇 / 136%↗ ", FG),
+                    p("· 미리보기", MUTED),
+                ],
+                true,
+            ));
         } else if s.sea || s.off {
             // 도시 밖·HUD 끄기: 아무것도 그리지 않는다 (rows 가 비면 창을 숨김)
         } else {
@@ -686,15 +865,20 @@ fn tick(st: &Arc<Mutex<State>>, wnd: HWND, shown: &mut Option<(View, (i32, i32, 
         return;
     };
     let dpi = unsafe { GetDpiForWindow(capture::hwnd(g)) }.max(96);
-    let view = View { rows, dpi };
+    let view = View {
+        rows,
+        dpi,
+        style: style(),
+    };
     let (l, top, r, bottom) = capture::client_rect_screen(g);
-    let fonts = Fonts::new(dpi);
+    let fonts = Fonts::new(dpi, view.style.scale);
     let (w, h) = unsafe {
         let dc = GetDC(wnd);
         let sizes = row_sizes(dc, &fonts, &view);
         ReleaseDC(wnd, dc);
         let w = sizes.iter().map(|s| s.0).max().unwrap_or(0);
-        let h: i32 = sizes.iter().map(|s| s.1).sum::<i32>() + GAP * (sizes.len() as i32 - 1).max(0);
+        let h: i32 = sizes.iter().map(|s| s.1).sum::<i32>()
+            + fonts.px(GAP) * (sizes.len() as i32 - 1).max(0);
         (w, h)
     };
     let off = (TOP as f64 * dpi as f64 / 96.0).round() as i32;

@@ -175,7 +175,7 @@ fn say_out(msg: &str) {
     }
 }
 
-use hud::{Hud, MUTED, WARN, p, pb, server_color};
+use hud::{Hud, MUTED, WARN, p, pb};
 use reader::{Event, Reader};
 use serde_json::{Value, json};
 use std::collections::{BTreeSet, HashMap};
@@ -469,7 +469,9 @@ struct Net {
 
 /// 에이레네 접속 주소 (모듈 전용. config.js 에 넣으면 헬폴 감지기 exe 동작도 바뀌므로 여기에만 둔다).
 /// 2026-11-22 사용자가 에이레네 캐릭터(태아마트)로 접속해 side-log 에서 본 주소. 다른 주소가 보이면 더한다
-const EIRENE_RANGES: [(&str, &str); 1] = [("203.242.208.207", "에이레네")];
+/// 1.2.0 (2026-11-28 side-log 22:59:38): 에이레네가 203.242.208.208:9067 로 접속 → '?' 로 서버 모름.
+/// 헬레네 216-219, 폴라리스 226-229 처럼 에이레네도 4개 대역(206-209)으로 본다
+const EIRENE_RANGES: [(&str, &str); 1] = [("203.242.208.206-209", "에이레네")];
 
 impl Net {
     fn new(data: Option<&PathBuf>) -> Self {
@@ -624,12 +626,13 @@ fn event_json(ev: &Event, server: &Option<String>) -> Value {
 /// 위 줄: 헬레네 · 리스본 / 서버 확인 중 / 서버 모름
 fn status_parts(server: &Option<String>, checked: bool, city: &Option<String>) -> Vec<hud::Part> {
     let mut v = match server {
-        Some(s) => vec![pb(s.clone(), server_color(s))],
+        Some(s) => vec![hud::srv(s.clone())],
         None if checked => vec![p("서버 모름", WARN)],
         None => vec![p("시세 모듈 · 서버 확인 중", MUTED)],
     };
     if let Some(c) = city {
-        v.push(p(format!(" · {c}"), hud::FG));
+        v.push(p(" · ", hud::FG));
+        v.push(hud::city(c.clone()));
     }
     v
 }
@@ -641,7 +644,7 @@ fn hud_say(h: &Hud, data: &Value) {
         Some("server") => match data["server"].as_str() {
             Some(s) => h.say(
                 "server",
-                vec![pb(s, server_color(s)), p(" 서버 확인", fg)],
+                vec![hud::srv(s), p(" 서버 확인", fg)],
                 2500,
             ),
             None => h.say(
@@ -655,7 +658,8 @@ fn hud_say(h: &Hud, data: &Value) {
                 h.say(
                     "city",
                     vec![
-                        p(format!("{c} 도착 · "), fg),
+                        hud::city(c),
+                        p(" 도착 · ", fg),
                         p("교역소 창을 열면 시세를 읽습니다", MUTED),
                     ],
                     3000,
@@ -754,7 +758,7 @@ fn hud_say(h: &Hud, data: &Value) {
             h.say(
                 "trade",
                 vec![
-                    pb(srv, server_color(srv)),
+                    hud::srv(srv),
                     p(
                         format!(
                             " 인근 시세 {} · {first}{more} ",
@@ -789,7 +793,7 @@ fn hud_say(h: &Hud, data: &Value) {
                     v => v.as_str().unwrap_or("").to_string(),
                 };
                 format!(
-                    "{} {} {}{}",
+                    "{} {}두캇 / {}{}", // 1.1.1 사용자: 가격과 % 를 나눠 보이게
                     r["name"].as_str().unwrap_or(""),
                     r["price"],
                     pct,
@@ -828,14 +832,10 @@ fn hud_say(h: &Hud, data: &Value) {
             h.say(
                 "trade",
                 vec![
-                    pb(srv, server_color(srv)),
-                    p(
-                        format!(
-                            " {} {kind} {first}{more} ",
-                            data["city"].as_str().unwrap_or("")
-                        ),
-                        fg,
-                    ),
+                    hud::srv(srv),
+                    p(" ", fg),
+                    hud::city(data["city"].as_str().unwrap_or("")),
+                    p(format!(" {kind} {first}{more} "), fg),
                     tail,
                 ],
                 6000,
@@ -1586,8 +1586,16 @@ fn hud_test() {
         println!("게임 창이 없습니다");
         return;
     };
+    // 1.2.0: HUD_STYLE 환경 변수 = 패널 ui.hudStyle 과 같은 JSON (색·크기 확인용)
+    if let Some(v) = std::env::var("HUD_STYLE")
+        .ok()
+        .and_then(|s| serde_json::from_str::<Value>(&s).ok())
+    {
+        hud::set_style(hud::Style::from_json(&v), false);
+    }
     let h = Hud::start(true);
     h.set_game(Some(g));
+    h.set_sea(false); // 1.0.2 부터 처음은 바다(숨김)라 시험에서는 끈다
     h.set_status(status_parts(&None, false, &None));
     let steps: Vec<(u64, Value)> = vec![
         (1500, json!({ "kind": "server", "server": "헬레네" })),
@@ -1732,6 +1740,7 @@ fn main() {
     set_name(&hello["input"]["character"]);
     set_hud_off(&hello["input"]["hudOff"]);
     hud::set_pos(pos_of(&hello["input"]["hudPos"]), false);
+    hud::set_style(hud::Style::from_json(&hello["input"]["hudStyle"]), false);
     write_line(&json!({ "t": "ready" }));
     emit(
         None,
@@ -1796,6 +1805,9 @@ fn main() {
                     set_hud_off(&line["data"]["off"]);
                 } else if line["data"]["kind"] == "hudpos" {
                     hud::set_pos(pos_of(&line["data"]), true);
+                } else if line["data"]["kind"] == "hudstyle" {
+                    // 1.2.0: 패널 'HUD 설정' 색·크기
+                    hud::set_style(hud::Style::from_json(&line["data"]["style"]), true);
                 } else if line["data"]["kind"] == "update" {
                     *UPDATE_V.lock().unwrap() = line["data"]["v"].as_str().map(String::from);
                 } else if line["data"]["kind"] == "open-site" {
@@ -1915,5 +1927,38 @@ mod name_tests {
         let v = json!(["다크냥이", " 암흑냥이 ", "다크냥이", "", "a/b", 3]);
         assert_eq!(names_from(&v), vec!["다크냥이", "암흑냥이"]);
         assert!(names_from(&json!(null)).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod eirene_tests {
+    #[test]
+    fn eirene_addrs_by_range() {
+        let ranges: Vec<(String, String)> = super::EIRENE_RANGES
+            .iter()
+            .map(|(a, s)| (a.to_string(), s.to_string()))
+            .collect();
+        let servers = vec!["헬레네".to_string(), "폴라리스".to_string(), "에이레네".to_string()];
+        let b = netaddr::AddrBook::new(&[], &servers, None, &ranges);
+        // 11-22 은 .207, 11-28 은 .208 로 접속함
+        assert_eq!(b.lookup("203.242.208.207:9067").as_deref(), Some("에이레네"));
+        assert_eq!(b.lookup("203.242.208.208:9067").as_deref(), Some("에이레네"));
+        assert_eq!(b.lookup("203.242.208.216:9067"), None);
+    }
+
+    #[test]
+    fn hud_style_from_panel() {
+        use super::hud::Style;
+        let s = Style::from_json(&serde_json::json!({
+            "size": 150, "server": {"size": 120, "c": {"에이레네": "#00ff00"}},
+            "city": {"size": 80, "c": "#112233"}, "general": {"size": 100, "c": null}
+        }));
+        assert_eq!(s.scale, 1.5);
+        assert_eq!(s.server, 1.2);
+        assert_eq!(s.city, 0.8);
+        assert_eq!(s.city_color, Some(0x112233));
+        assert_eq!(s.general_color, None);
+        assert_eq!(s.server_colors, vec![("에이레네".to_string(), 0x00ff00)]);
+        assert_eq!(Style::from_json(&serde_json::Value::Null), Style::default());
     }
 }
